@@ -1,0 +1,47 @@
+﻿@model FlexiFit_AdminPanel.Models.FoodItem
+
+<div class="main-content">
+    <div class="top-header">
+        <h2 style="margin: 0;">✏️ Edit Food Item</h2>
+        <a asp-action="Index" class="btn" style="background: #64748b;">Cancel</a>
+    </div>
+
+    <div class="content-area">
+        <div class="card">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="food_id" />
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label style="color: #94a3b8;">Food Name</label>
+                        <input asp-for="food_name" class="search" style="width: 100%; margin-top: 8px;" required />
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #94a3b8;">Category</label>
+                        <input asp-for="category" class="search" style="width: 100%; margin-top: 8px;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #94a3b8;">Calories (kcal)</label>
+                        <input asp-for="calories" type="number" step="0.01" class="search" style="width: 100%; margin-top: 8px;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #94a3b8;">Protein (g)</label>
+                        <input asp-for="protein" type="number" step="0.01" class="search" style="width: 100%; margin-top: 8px;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #94a3b8;">Carbs (g)</label>
+                        <input asp-for="carbs" type="number" step="0.01" class="search" style="width: 100%; margin-top: 8px;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #94a3b8;">Fats (g)</label>
+                        <input asp-for="fats" type="number" step="0.01" class="search" style="width: 100%; margin-top: 8px;" />
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; border-top: 1px solid #334155; padding-top: 20px;">
+                    <button type="submit" class="btn">Update Food Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

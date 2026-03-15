@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - Flexifit Admin</title>
+    <link rel="stylesheet" href="~/css/admin-style.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="sidebar" id="sidebar">
+            <div class="logo">⚡ Flexifit Admin</div>
+            <button id="sidebarToggle" class="toggle-btn" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 20px;">
+                ☰
+            </button>
+
+            <a class="nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"
+               asp-controller="Home" asp-action="Index">📊 Dashboard</a>
+
+            <a class="nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Users" ? "active" : "")"
+               asp-controller="Users" asp-action="Index">👥 User Management</a>
+
+            <a class="nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Workouts" ? "active" : "")"
+               asp-controller="Workouts" asp-action="Index">🏋️ Workouts</a>
+
+            <a class="nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Foods" ? "active" : "")"
+               asp-controller="Foods" asp-action="Index">🥗 Foods</a>
+
+            <a class="nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Logs" ? "active" : "")"
+               asp-controller="ActLogs" asp-action="Index">📋 Activity Logs</a>
+
+            <div class="nav-item" onclick="logout()">🚪 Logout</div>
+        </div>
+
+        <div class="main-content">
+            <div class="top-header">
+                <h2>Flexifit Admin Panel</h2>
+                <input class="search" placeholder="Search...">
+            </div>
+            <div class="content-area">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <script src="~/js/admin-logic.js"></script>
+</body>
+</html>

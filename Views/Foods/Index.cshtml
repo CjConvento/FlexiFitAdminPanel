@@ -1,0 +1,51 @@
+﻿@model IEnumerable<FlexiFit_AdminPanel.Models.FoodItem>
+
+<div class="main-content">
+    <div class="top-header">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <h2 style="margin: 0;">Food Mnagement</h2>
+        </div>
+
+        <div class="header-actions">
+            <input type="text" id="searchInput" class="search" placeholder="Search..." onkeyup="filterTable()">
+            <a asp-action="Create" class="btn">+ Add Foods</a>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div class="card">
+            <table id="foodTable">
+                <thead>
+                    <tr>
+                        <th>Food Name</th>
+                        <th>Category</th>
+                        <th>Calories</th>
+                        <th>Protein</th>
+                        <th>Carbs</th>
+                        <th>Fats</th>
+                        <th style="text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var food in Model)
+                    {
+                        <tr>
+                            <td>@food.food_name</td>
+                            <td><span style="color: #6366f1; background: #6366f120; padding: 2px 8px; border-radius: 4px; font-size: 12px;">@food.category</span></td>
+                            <td>@food.calories <small style="color: #64748b">kcal</small></td>
+                            <td>@food.protein <small style="color: #64748b">g</small></td>
+                            <td>@food.carbs <small style="color: #64748b">g</small></td>
+                            <td>@food.fats <small style="color: #64748b">g</small></td>
+                            <td>
+                                <div class="action-group">
+                                    <a asp-action="Edit" asp-route-id="@food.food_id" class="btn" style="padding: 5px 10px; font-size: 12px; text-decoration: none;">Edit</a>
+                                    <a asp-action="Delete" asp-route-id="@food.food_id" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px; text-decoration: none;" onclick="return confirm('Delete this item?')">Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

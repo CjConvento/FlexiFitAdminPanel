@@ -1,0 +1,42 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard-header">
+    <h1>📊 Admin Dashboard</h1>
+    <p>Welcome back! Here is the current status of Flexifit.</p>
+</div>
+
+<div class="cards">
+    <div class="card">
+        <div class="card-icon">👥</div>
+        <div class="card-info">
+            <h3>@ViewBag.TotalUsers</h3>
+            <p>Total Registered Users</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-icon">🏋️</div>
+        <div class="card-info">
+            <h3>@ViewBag.TotalWorkouts</h3>
+            <p>Workout Programs</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-icon">🥗</div>
+        <div class="card-info">
+            <h3>@ViewBag.TotalFoods</h3>
+            <p>Food Items in Database</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-icon">⚡</div>
+        <div class="card-info">
+            <h3>87</h3>
+            <p>Active Today</p>
+        </div>
+    </div>
+</div>
