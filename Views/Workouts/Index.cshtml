@@ -1,1 +1,105 @@
-﻿<h1>Workout Management Coming Soon</h1>
+﻿@model IEnumerable<FlexiFit_AdminPanel.Models.WorkoutItem>
+
+@{
+    ViewData["Title"] = "Workout Management";
+}
+
+<div class="content-area">
+    @* Page Header *@
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h2 style="font-weight: 700; color: #f8fafc;">Workout Management</h2>
+            <p style="color: #94a3b8; font-size: 14px; margin: 0;">Manage exercise programs, difficulty levels, and muscle groups.</p>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <input type="text" id="workoutSearch" class="search" placeholder="Search workouts..." onkeyup="filterTable('workoutSearch', 'workoutTable')">
+            <a asp-action="Create" class="btn">
+                <i class="fas fa-plus"></i> Add Workout
+            </a>
+        </div>
+    </div>
+
+    @* Full Entity Table *@
+    <div class="card" style="padding: 0; overflow-x: auto;">
+        <table id="workoutTable" style="margin-top: 0; min-width: 1200px;">
+            <thead>
+                <tr>
+                    @* 1. BAGONG COLUMN PARA SA ID *@
+                    <th style="padding-left: 24px; width: 80px;">ID</th>
+                    <th style="padding-left: 24px;">Workout Name</th>
+                    <th>Muscle Group</th>
+                    <th>Category</th>
+                    <th>Level</th>
+                    <th>Equipment</th>
+                    <th>Env</th>
+                    <th>Duration</th>
+                    <th>Calories</th>
+                    <th>Status</th>
+                    <th style="text-align: center; padding-right: 24px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var workout in Model)
+                {
+                    <tr class="workout-row" data-status="@workout.is_active">
+                        <td style="padding-left: 24px; color: #94a3b8; font-family: monospace; font-size: 13px;">
+                            #@workout.workout_id
+                        </td>
+
+                        <td style="padding-left: 24px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                @* REVISED IMAGE TAG *@
+                                <img src="@workout.FullImageUrl"
+                                     style="width: 45px; height: 45px; border-radius: 8px; object-fit: cover; border: 1px solid #334155;"
+                                     onerror="this.onerror=null; this.src='http://localhost:5160/images/workouts/default.png';" />
+                                <span style="font-weight: 600;">@workout.workout_name</span>
+                            </div>
+                        </td>
+                        <td><span style="font-size: 12px; color: #818cf8;">@workout.muscle_group</span></td>
+                        <td>
+                            <span class="badge-role" style="background: rgba(99, 102, 241, 0.1); color: #818cf8; padding: 4px 8px; border-radius: 4px; font-size: 11px;">
+                                @workout.category
+                            </span>
+                        </td>
+                        <td>
+                            @{
+                                var levelColor = workout.difficulty_level == "Advanced" ? "#ef4444" : workout.difficulty_level == "Intermediate" ? "#fbbf24" : "#10b981";
+                            }
+                            <span style="color: @levelColor; font-size: 12px; font-weight: 600;">@workout.difficulty_level</span>
+                        </td>
+                        <td style="font-size: 12px;">@workout.equipment.Replace("_", " ")</td>
+                        <td><small>@workout.environment</small></td>
+                        <td>@workout.duration<small style="color: #94a3b8">m</small></td>
+                        <td>@workout.calories_burned<small style="color: #94a3b8">kcal</small></td>
+
+                        @* --- BAGONG STATUS BADGE --- *@
+                        <td>
+                            @if (workout.is_active == 1)
+                            {
+                                <span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">ACTIVE</span>
+                            }
+                            else
+                            {
+                                <span style="background: #ef4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">INACTIVE</span>
+                            }
+                        </td>
+
+                        <td style="padding-right: 24px;">
+                            <div class="action-group" style="justify-content: center;">
+                                <a asp-action="Edit" asp-route-id="@workout.workout_id" class="btn" style="background: #334155; padding: 6px 10px; font-size: 12px;">
+                                    <i class="fas fa-edit"></i>Edit
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@workout.workout_id" method="post" style="display:inline;" onsubmit="return confirmDelete('@workout.workout_name')">
+                                    <button type="submit" class="btn btn-danger" style="padding: 6px 10px; font-size: 12px;">
+                                        <i class="fas fa-trash"></i>Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

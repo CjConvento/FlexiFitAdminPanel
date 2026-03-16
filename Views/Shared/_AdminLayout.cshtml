@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"] - Flexifit Admin</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <link rel="stylesheet" href="~/css/admin-style.css">
+    @RenderSection("Styles", required: false)
 </head>
 <body>
     <div class="admin-container">
@@ -29,13 +34,12 @@
             <a class="nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Logs" ? "active" : "")"
                asp-controller="ActLogs" asp-action="Index">📋 Activity Logs</a>
 
-            <div class="nav-item" onclick="logout()">🚪 Logout</div>
+            <a class="nav-item text-danger" asp-controller="Account" asp-action="Logout">🚪 Logout</a>
         </div>
 
         <div class="main-content">
             <div class="top-header">
-                <h2>Flexifit Admin Panel</h2>
-                <input class="search" placeholder="Search...">
+                <h2>Flexifit Admin Panel</h2>            
             </div>
             <div class="content-area">
                 @RenderBody()
@@ -43,6 +47,12 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="~/js/firebase-config.js"></script>
     <script src="~/js/admin-logic.js"></script>
+
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

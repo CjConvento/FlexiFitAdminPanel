@@ -1,0 +1,63 @@
+﻿@model FlexiFit_AdminPanel.Models.User
+
+@{
+    ViewData["Title"] = "Add New User";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Create New User Account</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label font-weight-bold">Full Name</label>
+                                <input asp-for="name" class="form-control" placeholder="Enter full name" required />
+                                <span asp-validation-for="name" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label font-weight-bold">Username</label>
+                                <input asp-for="username" class="form-control" placeholder="Unique username" required />
+                                <span asp-validation-for="username" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label font-weight-bold">Email Address</label>
+                            <input asp-for="email" type="email" class="form-control" placeholder="email@example.com" required />
+                            <span asp-validation-for="email" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label font-weight-bold">Role</label>
+                                <select asp-for="role" class="form-select form-control">
+                                    <option value="USER">User / Client</option>
+                                    <option value="ADMIN">Administrator</option>
+                                    <option value="COACH">Fitness Coach</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label font-weight-bold">Auth Provider</label>
+                                <input asp-for="auth_provider" class="form-control" value="MANUAL_ADMIN" readonly />
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success px-4">Save User</button>
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,51 +1,117 @@
 ﻿@model IEnumerable<FlexiFit_AdminPanel.Models.FoodItem>
 
-<div class="main-content">
-    <div class="top-header">
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <h2 style="margin: 0;">Food Mnagement</h2>
+@{
+    ViewData["Title"] = "Food Management";
+}
+
+@* PAALALA: Huwag nang maglagay ng <div class="main-content"> dito.
+   Dapat ay direkta na itong <div class="content-area"> dahil ang margin
+   ay kontrolado na ng Layout at CSS mo.
+*@
+
+<div class="content-area">
+    @* Page Header *@
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h2 style="margin: 0; font-weight: 700; color: #f8fafc;">🥗 Food Management</h2>
+            <p style="color: #94a3b8; font-size: 14px; margin: 0;">Manage your nutritional database and food items.</p>
         </div>
 
-        <div class="header-actions">
-            <input type="text" id="searchInput" class="search" placeholder="Search..." onkeyup="filterTable()">
-            <a asp-action="Create" class="btn">+ Add Foods</a>
+        <div style="display: flex; gap: 12px; align-items: center;">
+
+            @* --- BAGONG STATUS FILTERS --- *@
+            <div class="status-filters" style="display: flex; gap: 8px; margin-right: 10px;">
+                <button onclick="filterByStatus('all')" class="btn" style="background: #475569; padding: 6px 12px; font-size: 12px; cursor: pointer;">All</button>
+                <button onclick="filterByStatus('1')" class="btn" style="background: #10b981; padding: 6px 12px; font-size: 12px; cursor: pointer;">Active</button>
+                <button onclick="filterByStatus('0')" class="btn" style="background: #ef4444; padding: 6px 12px; font-size: 12px; cursor: pointer;">Inactive</button>
+            </div>
+
+            @* Search bar na susunod sa CSS focus effects mo *@
+            <input type="text" id="searchInput" class="search" placeholder="Search foods..." onkeyup="filterTable('searchInput', '.food-row')">
+
+            <a asp-action="Create" class="btn">
+                <i class="fas fa-plus"></i> Add Food Item
+            </a>
         </div>
     </div>
 
-    <div class="content-area">
-        <div class="card">
-            <table id="foodTable">
-                <thead>
-                    <tr>
-                        <th>Food Name</th>
-                        <th>Category</th>
-                        <th>Calories</th>
-                        <th>Protein</th>
-                        <th>Carbs</th>
-                        <th>Fats</th>
-                        <th style="text-align: center;">Actions</th>
+    @* Table Container *@
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <table id="foodTable" style="margin-top: 0;">
+            <thead>
+                <tr>
+                    @* 1. BAGONG COLUMN PARA SA ID *@
+                    <th style="padding-left: 24px; width: 80px;">ID</th>
+
+                    <th>Image</th>
+                    <th>Food Name</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Calories</th>
+                    <th>Protein</th>
+                    <th>Carbs</th>
+                    <th>Fats</th>
+                    <th style="text-align: center; padding-right: 24px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var food in Model)
+                {
+                    @* DAGDAG: class="food-row" at data-status para sa filter logic *@
+                    <tr class="food-row" data-status="@food.is_active">
+                        <td style="padding-left: 24px; color: #94a3b8; font-family: monospace; font-size: 13px;">
+                            #@food.food_id
+                        </td>
+
+                        <td>
+                            <div style="width: 45px; height: 45px; border-radius: 8px; overflow: hidden; background: #1e293b; border: 1px solid #334155; display: flex; align-items: center; justify-content: center;">
+                                <img src="@food.FullImageUrl"
+                                     alt="food"
+                                     style="width: 100%; height: 100%; object-fit: cover;"
+                                     onerror="this.onerror=null; this.src='http://localhost:5160/images/foods/default.png';" />
+                            </div>
+                        </td>
+
+                        <td style="font-weight: 600; color: #f1f5f9;">@food.food_name</td>
+
+                        <td>
+                            <span class="badge-role">
+                                @food.category
+                            </span>
+                        </td>
+
+                        @* --- BAGONG STATUS BADGE --- *@
+                        <td>
+                            @if (food.is_active == 1)
+                            {
+                                <span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">ACTIVE</span>
+                            }
+                            else
+                            {
+                                <span style="background: #ef4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">INACTIVE</span>
+                            }
+                        </td>
+
+                        <td><span style="color: #fbbf24; font-weight: 600;">@food.calories</span> <small style="color: #94a3b8">kcal</small></td>
+                        <td>@food.protein<small style="color: #94a3b8">g</small></td>
+                        <td>@food.carbs<small style="color: #94a3b8">g</small></td>
+                        <td>@food.fats<small style="color: #94a3b8">g</small></td>
+
+                        <td style="padding-right: 24px;">
+                            <div class="action-group" style="justify-content: center;">
+                                <a asp-action="Edit" asp-route-id="@food.food_id" class="btn" style="background: #334155; padding: 6px 12px; font-size: 13px;">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@food.food_id" method="post" style="display:inline;" onsubmit="return confirm('Delete this food item?')">
+                                    <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 13px;">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach (var food in Model)
-                    {
-                        <tr>
-                            <td>@food.food_name</td>
-                            <td><span style="color: #6366f1; background: #6366f120; padding: 2px 8px; border-radius: 4px; font-size: 12px;">@food.category</span></td>
-                            <td>@food.calories <small style="color: #64748b">kcal</small></td>
-                            <td>@food.protein <small style="color: #64748b">g</small></td>
-                            <td>@food.carbs <small style="color: #64748b">g</small></td>
-                            <td>@food.fats <small style="color: #64748b">g</small></td>
-                            <td>
-                                <div class="action-group">
-                                    <a asp-action="Edit" asp-route-id="@food.food_id" class="btn" style="padding: 5px 10px; font-size: 12px; text-decoration: none;">Edit</a>
-                                    <a asp-action="Delete" asp-route-id="@food.food_id" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px; text-decoration: none;" onclick="return confirm('Delete this item?')">Delete</a>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                }
+            </tbody>
+        </table>
     </div>
 </div>

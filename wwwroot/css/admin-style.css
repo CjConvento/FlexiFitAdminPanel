@@ -6,29 +6,54 @@
     font-family: 'Segoe UI', Arial, sans-serif;
 }
 
+/* Power BI Theme Colors */
+:root {
+    --pbi-blue: #118DFF;
+    --pbi-gray: #E1E1E1;
+    --pbi-dark: #252423;
+    --pbi-bg: #F3F2F1;
+    --bg-dark: #0f172a;
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --accent-blue: #3b82f6;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
 body {
-    background: #0f172a;
-    color: #f8fafc;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif;
     overflow-x: hidden;
 }
+
+
+/* THE MODERN CARDS */
+.glass-card {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+    .glass-card:hover {
+        transform: translateY(-5px);
+        border-color: #3b82f6;
+    }
 
 .admin-container {
     display: flex;
+    background-color: #0f172a; /* Deep Navy */
     min-height: 100vh;
 }
-
-/* --- SIDEBAR LOGIC --- */
 .sidebar {
     width: 260px;
     background: #1e293b;
-    position: fixed;
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    z-index: 2000;
-    left: 0;
-    transition: width 0.3s ease, left 0.3s ease;
-    border-right: 1px solid #334155;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: column;
 }
 
     /* Mini Sidebar State (Collapsed) */
@@ -99,7 +124,7 @@ body {
 
 /* --- MAIN CONTENT LOGIC --- */
 .main-content {
-    margin-left: 260px;
+    margin-left: 90px;
     width: calc(100% - 260px);
     min-height: 100vh;
     display: flex;
@@ -115,15 +140,13 @@ body {
 
 /* Header Section */
 .top-header {
-    background: #1e293b;
-    padding: 15px 30px 15px 20px;
-    border-bottom: 1px solid #334155;
+    padding: 0 2rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+    justify-content: space-between;
+    min-height: 70px;
+    background: #1e293b;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Toggle Button Style */
@@ -202,7 +225,7 @@ tr:hover {
 
 /* Buttons */
 .btn {
-    background: #6366f1;
+    background: #6082b6;
     border: none;
     padding: 10px 18px;
     border-radius: 6px;
@@ -236,4 +259,22 @@ tr:hover {
 
 .hidden {
     display: none;
+}
+
+.badge-role {
+    background: rgba(99, 102, 241, 0.1);
+    color: #818cf8;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Modal backdrop fix */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
 }

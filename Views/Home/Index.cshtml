@@ -1,42 +1,73 @@
-﻿@{
-    ViewData["Title"] = "Dashboard";
-}
+﻿<div class="container-fluid p-4">
+    <div id="dashboard-data"
+         data-users="@ViewBag.TotalUsers"
+         data-workouts="@ViewBag.TotalWorkouts"
+         data-foods="@ViewBag.TotalFoods"
+         style="display:none;"></div>
 
-<div class="dashboard-header">
-    <h1>📊 Admin Dashboard</h1>
-    <p>Welcome back! Here is the current status of Flexifit.</p>
-</div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold m-0 text-white">⚡ Overview</h2>
+            <p class="text-secondary small">Real-time stats for Flexifit Admin</p>
+        </div>
+        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-glow">
+            <i class="fas fa-download me-2"></i>Export Report
+        </button>
+    </div>
 
-<div class="cards">
-    <div class="card">
-        <div class="card-icon">👥</div>
-        <div class="card-info">
-            <h3>@ViewBag.TotalUsers</h3>
-            <p>Total Registered Users</p>
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="glass-card d-flex align-items-center">
+                <div class="icon-box bg-primary-soft me-3">
+                    <i class="fas fa-users text-primary"></i>
+                </div>
+                <div>
+                    <div class="text-secondary small fw-medium">Total Users</div>
+                    <div class="h3 fw-bold m-0 text-white">@ViewBag.TotalUsers</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card d-flex align-items-center">
+                <div class="icon-box bg-success-soft me-3">
+                    <i class="fas fa-dumbbell text-success"></i>
+                </div>
+                <div>
+                    <div class="text-secondary small fw-medium">Workouts</div>
+                    <div class="h3 fw-bold m-0 text-white">@ViewBag.TotalWorkouts</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card d-flex align-items-center">
+                <div class="icon-box bg-warning-soft me-3">
+                    <i class="fas fa-utensils text-warning"></i>
+                </div>
+                <div>
+                    <div class="text-secondary small fw-medium">Food Items</div>
+                    <div class="h3 fw-bold m-0 text-white">@ViewBag.TotalFoods</div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-icon">🏋️</div>
-        <div class="card-info">
-            <h3>@ViewBag.TotalWorkouts</h3>
-            <p>Workout Programs</p>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="glass-card h-100">
+                <h6 class="fw-bold mb-4 text-white">Growth Analytics</h6>
+                <div style="height: 300px;">
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </div>
         </div>
-    </div>
-
-    <div class="card">
-        <div class="card-icon">🥗</div>
-        <div class="card-info">
-            <h3>@ViewBag.TotalFoods</h3>
-            <p>Food Items in Database</p>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-icon">⚡</div>
-        <div class="card-info">
-            <h3>87</h3>
-            <p>Active Today</p>
+        <div class="col-lg-4">
+            <div class="glass-card h-100 text-center">
+                <h6 class="fw-bold mb-4 text-start text-white">Data Split</h6>
+                <div style="height: 250px;">
+                    <canvas id="distPieChart"></canvas>
+                </div>
+                <div class="mt-4 small text-secondary">Distribution of records in SQL Database</div>
+            </div>
         </div>
     </div>
 </div>

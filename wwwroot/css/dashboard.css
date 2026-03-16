@@ -1,0 +1,46 @@
+﻿/* Container Layout */
+.dashboard-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 10px;
+}
+
+/* Stat Cards */
+.stat-card {
+    flex: 1;
+    min-width: 200px;
+    background: rgba(255, 255, 255, 0.05); /* Semi-transparent dark card */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .stat-card h3 {
+        font-size: 2rem;
+        margin: 0;
+        font-weight: bold;
+    }
+
+    .stat-card p {
+        color: #a0aec0;
+        font-size: 0.9rem;
+        margin-top: 5px;
+        text-transform: uppercase;
+    }
+
+/* Visual Container */
+.chart-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 25px;
+    margin-top: 20px;
+    max-width: 500px; /* Nilimitahan para hindi sobrang laki */
+}

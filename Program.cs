@@ -1,37 +1,36 @@
-using Microsoft.Data.SqlClient; // Ito ang nawawalang linya
-using Dapper;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication.Cookies; // Idagdag ito sa itaas
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpClient();
+builder.Services.AddLogging();
 
-// Sa loob ng Program.cs, bago ang builder.Build()
-var connectionString = builder.Configuration.GetConnectionString("FlexifitDb");
-
-// Kung gagamit ka ng SQL Client
-builder.Services.AddScoped<SqlConnection>(provider => new SqlConnection(connectionString));
+// 1. ADD COOKIE AUTHENTICATION HERE
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login"; // Redirect dito kapag hindi naka-login
+        options.AccessDeniedPath = "/Account/AccessDenied";
+    });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 
+// 2. SIGURADUHING NASA GITNA ITO NG ROUTING AT ENDPOINTS
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Account}/{action=Login}/{id?}"); // Default page is Login
 
 app.Run();

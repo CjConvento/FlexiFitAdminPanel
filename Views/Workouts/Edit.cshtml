@@ -1,0 +1,62 @@
+﻿@model FlexiFit_AdminPanel.Models.WorkoutItem
+
+<div class="content-area">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h2 style="margin: 0; font-weight: 700; color: #f8fafc;">✏️ Edit Workout</h2>
+            <p style="color: #94a3b8; font-size: 14px; margin: 0;">Update the details for #@Model.workout_id - @Model.workout_name</p>
+        </div>
+        <a asp-action="Index" class="btn" style="background: #475569;">Back to List</a>
+    </div>
+
+    <div class="card">
+        <form asp-action="Edit" method="post">
+            @* IMPORTANT: Kailangan ito para malaman ng SQL kung anong ID ang i-uupdate *@
+            <input type="hidden" asp-for="workout_id" />
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px;">Workout Name</label>
+                    <input asp-for="workout_name" class="search" style="width: 100%; margin-top: 8px;" required />
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px;">Status</label>
+                    <select asp-for="is_active" class="search" style="width: 100%; margin-top: 8px; background: #0f172a;">
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px;">Muscle Group</label>
+                    <input asp-for="muscle_group" class="search" style="width: 100%; margin-top: 8px;" />
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px;">Difficulty Level</label>
+                    <select asp-for="difficulty_level" class="search" style="width: 100%; margin-top: 8px; background: #0f172a;">
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px;">Duration (mins)</label>
+                    <input asp-for="duration" type="number" class="search" style="width: 100%; margin-top: 8px;" />
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px;">Calories Burned</label>
+                    <input asp-for="calories_burned" type="number" class="search" style="width: 100%; margin-top: 8px;" />
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; border-top: 1px solid #334155; padding-top: 25px; display: flex; gap: 10px;">
+                <button type="submit" class="btn">Update Workout</button>
+                <a asp-action="Index" class="btn" style="background: transparent; border: 1px solid #334155;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

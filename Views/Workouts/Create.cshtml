@@ -1,0 +1,85 @@
+﻿@model FlexiFit_AdminPanel.Models.WorkoutItem
+
+<div class="content-area">
+    @* Page Header *@
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h2 style="margin: 0; font-weight: 700; color: #f8fafc;">🏋️ Add New Workout</h2>
+            <p style="color: #94a3b8; font-size: 14px; margin: 0;">Create a new exercise entry for the database.</p>
+        </div>
+        <a asp-action="Index" class="btn" style="background: #475569;">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="card">
+        <form asp-action="Create" method="post">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+
+                @* Basic Info *@
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Workout Name</label>
+                    <input asp-for="workout_name" class="search" style="width: 100%; margin-top: 8px;" placeholder="e.g. Bench Press" required />
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Category</label>
+                    <select asp-for="category" class="search" style="width: 100%; margin-top: 8px; background: #0f172a;">
+                        <option value="MUSCLE_GAIN">Muscle Gain</option>
+                        <option value="CARDIO">Cardio / Warmup</option>
+                        <option value="REHAB">Rehab</option>
+                    </select>
+                </div>
+
+                @* Targeting *@
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Muscle Group</label>
+                    <input asp-for="muscle_group" class="search" style="width: 100%; margin-top: 8px;" placeholder="e.g. Chest, Triceps" />
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Difficulty Level</label>
+                    <select asp-for="difficulty_level" class="search" style="width: 100%; margin-top: 8px; background: #0f172a;">
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+                </div>
+
+                @* Settings *@
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Equipment</label>
+                    <input asp-for="equipment" class="search" style="width: 100%; margin-top: 8px;" placeholder="e.g. Dumbbells, Machine" />
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Environment</label>
+                    <input asp-for="environment" class="search" style="width: 100%; margin-top: 8px;" placeholder="e.g. Gym, Home" />
+                </div>
+
+                @* Stats *@
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Duration (minutes)</label>
+                    <input asp-for="duration" type="number" class="search" style="width: 100%; margin-top: 8px;" />
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Calories Burned</label>
+                    <input asp-for="calories_burned" type="number" class="search" style="width: 100%; margin-top: 8px;" />
+                </div>
+
+                @* Image Filename - Optional *@
+                <div class="form-group" style="grid-column: span 2;">
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Image Filename (Optional)</label>
+                    <input asp-for="img_filename" class="search" style="width: 100%; margin-top: 8px;" placeholder="e.g. pushup.png" />
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; border-top: 1px solid #334155; padding-top: 25px; display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn" style="padding: 12px 30px;">
+                    <i class="fas fa-save"></i> Save Workout
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
