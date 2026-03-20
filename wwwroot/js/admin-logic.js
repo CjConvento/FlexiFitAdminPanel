@@ -1,6 +1,8 @@
 ﻿/* wwwroot/js/admin-logic.js */
 
 document.addEventListener('DOMContentLoaded', function () {
+
+    // --- 1. SIDEBAR LOGIC ---
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.querySelector('.main-content');
@@ -16,9 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const savedState = localStorage.getItem('sidebar-state');
-    if (savedState) {
-        applySidebarState(savedState);
-    }
+    if (savedState) applySidebarState(savedState);
 
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function (e) {
@@ -29,152 +29,112 @@ document.addEventListener('DOMContentLoaded', function () {
             localStorage.setItem('sidebar-state', currentState);
         });
     }
-});
-
-/**
- * GLOBAL FUNCTIONS
- */
-
-// 1. Delete Confirmation
-function confirmDelete(name) {
-    return confirm(`Babala: Sigurado ka bang gusto mong permanenteng burahin si ${name}? Hindi na ito mababawi.`);
-}
-
-// 2. Status Filter Logic (Active/Inactive)
-// Inilagay natin sa global para matawag ng button onclick
-function filterByStatus(status) {
-    const rows = document.querySelectorAll('.food-row, .workout-row'); // Support para sa parehong tables
-
-    rows.forEach(row => {
-        const rowStatus = row.getAttribute('data-status');
-
-        if (status === 'all') {
-            row.style.display = '';
-        } else if (rowStatus === status) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-}
-
-// 3. Table Search Filter (Pinaganda para flexible)
-function filterTable(inputId = "searchInput", rowClass = ".food-row") {
-    const input = document.getElementById(inputId);
-    const filter = input.value.toUpperCase();
-    const rows = document.querySelectorAll(rowClass + ", .workout-row");
-
-    rows.forEach(row => {
-        const text = row.textContent || row.innerText;
-        if (text.toUpperCase().indexOf(filter) > -1) {
-            row.style.display = "";
-        } else {
-            row.style.display = "none";
-        }
-    });
-}
 
 
-// 1. Firebase Logic para sa Google Add
-const googleProvider = new firebase.auth.GoogleAuthProvider();
+    // --- DOUGHNUT CHART (Data Split) ---
+    const pieCanvas = document.getElementById('distPieChart');
+    if (pieCanvas) {
+        new Chart(pieCanvas.getContext('2d'), {
+            type: 'doughnut', // Mula 'pie', ginawa nating 'doughnut'
+            data: {
+                labels: ['Workouts', 'Foods', 'Users'],
+                datasets: [{
+                    data: [workoutCount, foodCount, userCount],
+                    backgroundColor: ['#10b981', '#fbbf24', '#3b82f6'],
+                    borderWidth: 0,
+                    hoverOffset: 20,
+                    borderRadius: 8 // Ginagawa nitong rounded ang kanto ng bawat slice
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%', // Ito ang nagpapanipis sa ring (Modern Look)
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#94a3b8',
+                            usePointStyle: true, // Ginagawang bilog ang icons sa legend
+                            padding: 25,
+                            font: { size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        padding: 12,
+                        bodyColor: '#f8fafc',
+                        callbacks: {
+                            label: function (context) {
+                                let sum = 0;
+                                context.dataset.data.map(data => { sum += data; });
+                                let percentage = ((context.raw * 100) / sum).toFixed(1) + "%";
+                                return ` ${context.label}: ${context.raw} (${percentage})`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
 
-document.getElementById('btnGoogleAdd').addEventListener('click', function () {
-    firebase.auth().signInWithPopup(googleProvider).then((result) => {
-        const user = result.user;
+    // Growth Chart (Line Chart) Initialization
+    if (growthCanvas) {
+        const ctxL = growthCanvas.getContext('2d');
+        new Chart(ctxL, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Activity',
+                    data: [12, 19, 3, 5, 2, 3, 15], // Dummy data muna
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+    }
 
-        // AUTO-FILL FORM FIELDS
-        // Gamitin ang .value para sa mga input fields
-        if (document.getElementById('modalName')) {
-            document.getElementById('modalName').value = user.displayName || "";
-        }
-
-        if (document.getElementById('modalEmail')) {
-            document.getElementById('modalEmail').value = user.email || "";
-        }
-
-        if (document.getElementById('modalUsername')) {
-            // Inayos ang split: '@' lang dapat, hindi '@@'
-            const emailParts = user.email.split('@');
-            document.getElementById('modalUsername').value = emailParts[0];
-        }
-
-        if (document.getElementById('modalUid')) {
-            document.getElementById('modalUid').value = user.uid;
-        }
-
-        if (document.getElementById('modalProvider')) {
-            document.getElementById('modalProvider').value = 'GOOGLE';
-        }
-
-        alert("Google Account Linked! Just choose a role and save.");
-    }).catch((error) => {
-        console.error("Auth Error:", error);
-        alert("Error during Google Sign-in: " + error.message);
-    });
-});
-
-
-/**
- * 4. AUTOMATED PROVIDER RESET
- * Nililinis ang form at ibinabalik sa 'EMAIL' ang provider kapag sinara ang modal
- * para hindi aksidenteng maging 'GOOGLE' ang manual input.
- */
-document.addEventListener('DOMContentLoaded', function () {
+    // --- 3. FIREBASE & MODAL LOGIC ---
     const userModal = document.getElementById('addUserModal');
     if (userModal) {
         userModal.addEventListener('hidden.bs.modal', function () {
             const form = document.getElementById('addUserForm');
-            if (form) {
-                form.reset(); // Nililinis lahat ng inputs
-
-                // Ibinabalik sa default 'EMAIL' ang provider
-                const providerInput = document.getElementById('modalProvider');
-                if (providerInput) {
-                    providerInput.value = 'EMAIL';
-                }
-
-                // Nililinis ang UID field
-                const uidInput = document.getElementById('modalUid');
-                if (uidInput) {
-                    uidInput.value = '';
-                }
-
-                console.log("Form reset: Provider returned to EMAIL.");
-            }
+            if (form) form.reset();
         });
     }
 });
 
 /**
- * 5. UI NOTIFICATIONS (Toast or Alert)
- * Para sa mas magandang user experience pagkatapos ng Delete o Create
+ * GLOBAL HELPER FUNCTIONS
  */
-function showAdminNotify(message, type = 'success') {
-    // Pwede mong lagyan ng Toast logic dito sa hinaharap
-    console.log(`[${type.toUpperCase()}]: ${message}`);
-}
-
-/**
- * 6. DYNAMIC FORM VALIDATION
- * Sinisiguro na may laman ang email at username bago i-submit
- */
-const addUserForm = document.getElementById('addUserForm');
-if (addUserForm) {
-    addUserForm.addEventListener('submit', function (e) {
-        const email = document.getElementById('modalEmail')?.value;
-        const provider = document.getElementById('modalProvider')?.value;
-
-        // Simple check: Kung Google, dapat may UID
-        if (provider === 'GOOGLE') {
-            const uid = document.getElementById('modalUid')?.value;
-            if (!uid) {
-                alert("Mali: Walang Google UID na nakuha. Pakipindot ulit ang Google button.");
-                e.preventDefault();
-                return false;
-            }
-        }
-
-        showAdminNotify("Processing request...");
+function filterByStatus(status) {
+    const rows = document.querySelectorAll('.food-row, .workout-row, tr[data-status]');
+    rows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status');
+        row.style.display = (status === 'all' || rowStatus === status) ? '' : 'none';
     });
 }
 
+function filterTable(inputId, tableId) {
+    const input = document.getElementById(inputId);
+    const filter = input.value.toUpperCase();
+    const table = document.getElementById(tableId);
+    const tr = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < tr.length; i++) {
+        let textContent = tr[i].textContent || tr[i].innerText;
+        tr[i].style.display = textContent.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+    }
+}

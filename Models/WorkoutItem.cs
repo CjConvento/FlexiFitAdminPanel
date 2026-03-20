@@ -43,7 +43,7 @@ namespace FlexiFit_AdminPanel.Models
                 // Tumpak na mapping base sa iyong file explorer
                 if (cat.Contains("MUSCLE_GAIN"))
                 {
-                    folderPath = "images/workouts/musclegain";
+                    folderPath = "images/workouts/muscle_gain";
                 }
                 else if (cat.Contains("CARDIO") || cat.Contains("WARMUP"))
                 {
@@ -55,7 +55,7 @@ namespace FlexiFit_AdminPanel.Models
                 }
                 else
                 {
-                    folderPath = "images/workouts/musclegain";
+                    folderPath = "images/workouts/muscle_gain";
                 }
 
                 return $"{apiBaseUrl}/{folderPath}/{img_filename}";

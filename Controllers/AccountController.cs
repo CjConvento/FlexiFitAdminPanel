@@ -19,8 +19,8 @@ namespace FlexiFit_AdminPanel.Controllers
         {
             // 1. Dito mo i-set ang gusto mong Admin credentials
             // Dahil Firebase ang gamit sa mobile, itong Admin panel ay may sariling "Master Key"
-            string hardcodedAdmin = "flexifit_admin";
-            string hardcodedPass = "FlexiFit2026!";
+            string hardcodedAdmin = "admin";
+            string hardcodedPass = "flexifit";
 
             // 2. I-check kung tumutugma ang input
             if (model.Username == hardcodedAdmin && model.Password == hardcodedPass)
