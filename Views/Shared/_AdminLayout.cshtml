@@ -9,50 +9,62 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <link rel="stylesheet" href="~/css/admin-style.css">
-    @RenderSection("Styles", required: false)
-</head>
-<body>
-    <div class="admin-container">
-        <div class="sidebar" id="sidebar">
-            <div class="logo">⚡ Flexifit Admin</div>
-            <button id="sidebarToggle" class="toggle-btn" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 20px;">
-                ☰
-            </button>
+        @RenderSection("Styles", required: false)
+    </head>
+    <body>
+        <div class="admin-container">
+            <div class="sidebar" id="sidebar">
+                <div class="logo">
+                    <span>Flexifit Admin</span>
+                    <button id="sidebarToggle" class="toggle-btn">☰</button>
+                </div>
 
-            <a class="nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"
-               asp-controller="Home" asp-action="Index">📊 Dashboard</a>
+                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"
+                       asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-chart-line"></i> <span>Dashboard</span>
+                </a>
 
-            <a class="nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Users" ? "active" : "")"
-               asp-controller="Users" asp-action="Index">👥 User Management</a>
+                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Users" ? "active" : "")"
+                       asp-controller="Users" asp-action="Index">
+                    <i class="fas fa-users"></i> <span>User Management</span>
+                </a>
 
-            <a class="nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Workouts" ? "active" : "")"
-               asp-controller="Workouts" asp-action="Index">🏋️ Workouts</a>
+                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Workouts" ? "active" : "")"
+                       asp-controller="Workouts" asp-action="Index">
+                    <i class="fas fa-dumbbell"></i> <span>Workouts</span>
+                </a>
 
-            <a class="nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Foods" ? "active" : "")"
-               asp-controller="Foods" asp-action="Index">🥗 Foods</a>
+                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Foods" ? "active" : "")"
+                       asp-controller="Foods" asp-action="Index">
+                    <i class="fas fa-utensils"></i> <span>Foods</span>
+                </a>
 
-            <a class="nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Logs" ? "active" : "")"
-               asp-controller="ActLogs" asp-action="Index">📋 Activity Logs</a>
+                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "ActLogs" ? "active" : "")"
+                       asp-controller="ActLogs" asp-action="Index">
+                    <i class="fas fa-history"></i> <span>Activity Logs</span>
+                </a>
 
-            <a class="nav-item text-danger" asp-controller="Account" asp-action="Logout">🚪 Logout</a>
+                <a class="nav-link text-danger" asp-controller="Account" asp-action="Logout">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
+            </div>
+
+            <div class="main-content">
+                <div class="top-header">
+                    <h2>Flexifit Admin Panel</h2>
+                </div>
+                <div class="content-area">
+                    @RenderBody()
+                </div>
+            </div>
         </div>
 
-        <div class="main-content">
-            <div class="top-header">
-                <h2>Flexifit Admin Panel</h2>            
-            </div>
-            <div class="content-area">
-                @RenderBody()
-            </div>
-        </div>
-    </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+        <script src="~/js/firebase-config.js"></script>
+        <script src="~/js/admin-logic.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="~/js/firebase-config.js"></script>
-    <script src="~/js/admin-logic.js"></script>
-
-    @RenderSection("Scripts", required: false)
-</body>
+        @RenderSection("Scripts", required: false)
+    </body>
 </html>

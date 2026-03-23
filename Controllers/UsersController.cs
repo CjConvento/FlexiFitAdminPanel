@@ -66,6 +66,67 @@ namespace FlexiFit_AdminPanel.Controllers
             return View();
         }
 
+        // 5. GET: EDIT PAGE
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching user ID {Id} for edit", id);
+                var response = await _httpClient.GetAsync($"api/users/{id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var user = await response.Content.ReadFromJsonAsync<User>();
+                    if (user == null)
+                        return NotFound();
+
+                    return View(user);
+                }
+                else
+                {
+                    _logger.LogWarning("API returned {StatusCode} when fetching user {Id}", response.StatusCode, id);
+                    TempData["Error"] = $"User not found (ID: {id})";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching user {Id}", id);
+                TempData["Error"] = "Unable to connect to API. Please ensure the API is running on port 5160.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // 6. POST: UPDATE USER
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(User user)
+        {
+            try
+            {
+                _logger.LogInformation("Updating user ID {Id}", user.user_id);
+                var response = await _httpClient.PutAsJsonAsync($"api/users/{user.user_id}", user);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["Success"] = "User updated successfully!";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var errorMsg = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning("API update failed for user {Id}: {Error}", user.user_id, errorMsg);
+                ModelState.AddModelError(string.Empty, $"Update failed: {errorMsg}");
+                return View(user);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating user {Id}", user.user_id);
+                ModelState.AddModelError(string.Empty, "API is unreachable. Please check the connection.");
+                return View(user);
+            }
+        }
+
         // 3. POST: PROCESS CREATE
         [HttpPost]
         [ValidateAntiForgeryToken]
