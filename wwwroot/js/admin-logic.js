@@ -164,5 +164,53 @@ function confirmDelete(itemName) {
 }
 
 function useGoogleProvider() {
-    console.log("Google provider clicked");
+    // Siguraduhing available ang Firebase Auth
+    if (typeof firebase === 'undefined') {
+        console.error('Firebase SDK not loaded');
+        alert('Firebase is not initialized. Please check your scripts.');
+        return;
+    }
+
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
+
+    firebase.auth().signInWithPopup(provider)
+        .then((result) => {
+            const user = result.user;
+            const displayName = user.displayName || '';
+            const email = user.email || '';
+            const uid = user.uid;
+
+            // Punan ang modal form fields (nasa loob ng addUserModal)
+            const modalName = document.getElementById('modalName');
+            const modalUsername = document.getElementById('modalUsername');
+            const modalEmail = document.getElementById('modalEmail');
+            const modalUid = document.getElementById('modalUid');
+            const modalProvider = document.getElementById('modalProvider');
+
+            if (modalName) modalName.value = displayName;
+            if (modalEmail) modalEmail.value = email;
+            if (modalUid) modalUid.value = uid;
+            if (modalProvider) modalProvider.value = 'GOOGLE';
+
+            // Awtomatikong mag-generate ng username base sa display name o email
+            if (modalUsername) {
+                if (displayName) {
+                    // Hal. "Juan Dela Cruz" -> "juan_dela_cruz"
+                    modalUsername.value = displayName.toLowerCase().replace(/\s+/g, '_');
+                } else if (email) {
+                    modalUsername.value = email.split('@')[0];
+                } else {
+                    modalUsername.value = 'user_' + uid.slice(0, 8);
+                }
+            }
+
+            console.log('Google sign-in successful', user);
+            // Hindi na kailangang i-show ulit ang modal dahil naka-open na ito
+        })
+        .catch((error) => {
+            console.error('Google sign-in error:', error);
+            alert('Failed to sign in with Google: ' + error.message);
+        });
 }
