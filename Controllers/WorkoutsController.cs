@@ -59,6 +59,19 @@ namespace FlexiFit_AdminPanel.Controllers
             }
         }
 
+        // 7. WORKOUT TUTORIALS: Show workouts with video links
+        public async Task<IActionResult> Tutorials()
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var sql = @"SELECT workout_id, workout_name, video_url 
+                    FROM dbo.wrk_workouts 
+                    WHERE video_url IS NOT NULL AND video_url != ''";
+                var workouts = await connection.QueryAsync<WorkoutItem>(sql);
+                return View(workouts);
+            }
+        }
+
         // 5. EDIT (POST): I-update ang existing workout record
         [HttpPost]
         public async Task<IActionResult> Edit(WorkoutItem workout)

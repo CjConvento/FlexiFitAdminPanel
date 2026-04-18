@@ -1,0 +1,52 @@
+﻿@model IEnumerable<FlexiFit_AdminPanel.Models.WorkoutItem>
+
+@{
+    ViewData["Title"] = "Workout Tutorials";
+}
+
+<div class="content-area">
+    <div class="page-header">
+        <div>
+            <h2>Workout Tutorials</h2>
+            <p>Videos from the library – click to play</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="tutorials-grid">
+            @foreach (var workout in Model)
+            {
+                var videoUrl = workout.video_url;
+                if (string.IsNullOrEmpty(videoUrl)) continue;
+
+                // If the video URL is relative, prepend the API base URL
+                if (!videoUrl.StartsWith("http"))
+                {
+                    videoUrl = $"http://localhost:5160{videoUrl}";
+                }
+                <div class="tutorial-card">
+                    <div class="tutorial-card-header">
+                        <h3>@workout.workout_name</h3>
+                    </div>
+                    <div class="tutorial-card-video">
+                        <video controls>
+                            <source src="@videoUrl" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="tutorial-card-link">
+                            <a href="@videoUrl" target="_blank">
+                                <i class="fas fa-external-link-alt"></i> Open in new tab
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        @if (!Model.Any())
+        {
+            <div class="no-tutorials">
+                No tutorial videos found.
+            </div>
+        }
+    </div>
+</div>

@@ -22,6 +22,8 @@ namespace FlexiFit_AdminPanel.Models
         public string? img_filename { get; set; }
         public int duration { get; set; }
 
+        public string? video_url { get; set; }
+
         // --- DITO ANG REVISON PARA SA IMAGES ---
 
         /// <summary>
