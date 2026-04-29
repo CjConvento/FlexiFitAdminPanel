@@ -7,7 +7,7 @@ namespace FlexiFit_AdminPanel.Controllers
 {
     public class FoodsController : Controller
     {
-        private readonly string _connectionString = "Server=192.168.1.246,1433;Database=FLEXIFIT;User Id=cy;Password=********;TrustServerCertificate=True;";
+        private readonly string _connectionString = "Server=10.113.157.21,1433;Database=FLEXIFIT;User Id=cy;Password=N@t@jimur@#cydb;TrustServerCertificate=True;";
 
         // 1. READ: Isama ang img_filename para gumana ang FullImageUrl logic
         public async Task<IActionResult> Index()

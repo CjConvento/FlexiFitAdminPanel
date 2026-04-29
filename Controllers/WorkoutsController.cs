@@ -2,12 +2,21 @@
 using Microsoft.Data.SqlClient;
 using Dapper;
 using FlexiFit_AdminPanel.Models;
+using Microsoft.Extensions.Configuration;  // Add this
 
 namespace FlexiFit_AdminPanel.Controllers
 {
     public class WorkoutsController : Controller
     {
-        private readonly string _connectionString = "Server=192.168.1.246,1433;Database=FLEXIFIT;User Id=cy;Password=********;TrustServerCertificate=True;";
+        private readonly string _connectionString;
+
+        // Constructor injection – gets configuration from appsettings.json
+        public WorkoutsController(IConfiguration configuration)
+        {
+            _connectionString = configuration.GetConnectionString("FlexifitDb");
+            if (string.IsNullOrEmpty(_connectionString))
+                throw new InvalidOperationException("Connection string 'FlexifitDb' not found in appsettings.json.");
+        }
 
         // 1. READ: Ipakita ang lahat ng workouts kasama ang img_filename
         public async Task<IActionResult> Index()

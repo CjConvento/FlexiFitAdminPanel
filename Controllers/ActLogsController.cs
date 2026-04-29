@@ -7,7 +7,7 @@ namespace FlexiFit_AdminPanel.Controllers
 {
     public class ActLogsController : Controller
     {
-        private readonly string _connectionString = "Server=192.168.1.246,1433;Database=FLEXIFIT;User Id=cy;Password=********;TrustServerCertificate=True;";
+        private readonly string _connectionString = "Server=10.113.157.21,1433;Database=FLEXIFIT;User Id=cy;Password=N@t@jimur@#cydb;TrustServerCertificate=True;";
 
         public async Task<IActionResult> Index(string search, DateTime? fromDate, DateTime? toDate, int page = 1)
         {
