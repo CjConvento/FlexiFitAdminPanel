@@ -2,7 +2,7 @@
 
 **Status: Active Management Framework** — Core administration interfaces, relational data grids, workout tutorial assets, and system audit logs are fully operational, verified, and running in production configuration.
 
-A high-performance, dark-themed internal web enterprise application built using the **ASP.NET Core MVC Pattern (.NET 8.0)** to serve as the centralized administrative control hub for the entire FlexiFit platform. This control portal communicates directly with the central **FlexiFit REST API** to enable platform administrators, metrics handlers, and fitness coaches to securely oversee database stats, perform system data management, and audit user compliance records.
+A high-performance, internal web enterprise application built using the **ASP.NET Core MVC Pattern (.NET 8.0)** to serve as the centralized administrative control hub for the entire FlexiFit platform. This control portal communicates directly with the central **FlexiFit REST API** to enable platform administrators, metrics handlers, and fitness coaches to securely oversee database stats, perform system data management, and audit user compliance records.
 
 > **Distributed Domain Architecture:** Adhering to standard enterprise design patterns, this back-office subsystem is completely decoupled from the consumer-facing native mobile applications. It runs on a dedicated web server node, ensuring that administrative database operations do not compete with consumer mobile API request boundaries.
 
@@ -15,21 +15,7 @@ A high-performance, dark-themed internal web enterprise application built using 
 | **Presentation Tier** | ASP.NET Core Razor Views (.cshtml), HTML5, CSS3, Modern Responsive Layout Frameworks |
 | **Application Core** | C# / .NET 8.0 (Strict Separation of Concerns Architecture Pattern) |
 | **Relational Data ORM** | Enterprise ViewModels mapping state validation controls to database engines |
-| **Analytical Visualization** | Interactive chart arrays plotting high-frequency data (Growth Analytics & Database Data Splits) |
-| **Target Infrastructure** | On-Premise Internet Information Services (IIS) Server / Cross-Platform hosting bundle ready |
 | **Version Control** | Distributed Git Lifecycle utilizing GitHub repository branch tracking |
-
----
-
-## Operational Console UI Blueprints
-
-The dashboard layout features production-tested, low-latency data rendering tables:
-
-1. **Secure Administrative Gate:** An isolated authentication engine (`Account/Login`) featuring zero hardcoded access properties, verified directly against system master credentials.
-2. **Central Analytics Dashboard:** Renders core real-time metrics including **Total active consumers, exercise counts, and database asset item distributions** via an interactive SQL Database Data Split visualization chart layout.
-3. **User Management Console:** Granular admin workspace allowing managers to provision data rows, modify privilege parameters, and update account properties safely.
-4. **Workout & Content Controls:** Active dashboard panels allowing coaches to index exercise tracking criteria (Muscle Groups, Difficulty Levels, Met Calories, Environments) and map video tutorial presentation vectors directly.
-5. **Centralized Compliance Activity Logs:** Administrative audit view compiling user operations, historical progress logs, and tracking metrics with specialized `FROM/TO` chronological selection matrices.
 
 ---
 
@@ -95,14 +81,6 @@ FlexiFitAdminPanel/
 ├── Program.cs                           # Primary bootstrap engine setting up runtime middleware layers
 └── README.md                            # Comprehensive Architecture System Documentation
 ```
-
----
-
-## Security Hardening & Data Protection Implementations
-
-- **Strict Environment Separation:** All raw server credentials, connection settings, and system parameters have been completely migrated away from hardcoded configurations in favor of dynamic `appsettings.json` structural injections.
-- **Decoupled ViewModels Integration:** Presentation layouts never bind directly to domain entities. All data routing fields pass through dedicated validation ViewModels (such as `LoginViewModel` and `DashboardViewModel`) to prevent mass-assignment vulnerabilities.
-- **Audit-Compliance Tracking:** Includes a native data tracking dashboard component (`ActLogs`) linked to centralized database transactions to ensure transparent compliance analytics across the platform ecosystem.
 
 ---
 
