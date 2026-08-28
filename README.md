@@ -4,11 +4,11 @@
 
 A high-performance, dark-themed internal web enterprise application built using the **ASP.NET Core MVC Pattern (.NET 8.0)** to serve as the centralized administrative control hub for the entire FlexiFit platform. This control portal communicates directly with the central **FlexiFit REST API** to enable platform administrators, metrics handlers, and fitness coaches to securely oversee database stats, perform system data management, and audit user compliance records.
 
-> 💡 **Distributed Domain Architecture:** Adhering to standard enterprise design patterns, this back-office subsystem is completely decoupled from the consumer-facing native mobile applications. It runs on a dedicated web server node, ensuring that administrative database operations do not compete with consumer mobile API request boundaries.
+> **Distributed Domain Architecture:** Adhering to standard enterprise design patterns, this back-office subsystem is completely decoupled from the consumer-facing native mobile applications. It runs on a dedicated web server node, ensuring that administrative database operations do not compete with consumer mobile API request boundaries.
 
 ---
 
-## 🛠️ Technology Stack & Core Framework Layers
+## Technology Stack & Core Framework Layers
 
 | System Component | Selected Technology Stack & Context |
 |---|---|
@@ -21,7 +21,7 @@ A high-performance, dark-themed internal web enterprise application built using 
 
 ---
 
-## 🎨 Operational Console UI Blueprints
+## Operational Console UI Blueprints
 
 The dashboard layout features production-tested, low-latency data rendering tables:
 
@@ -33,7 +33,7 @@ The dashboard layout features production-tested, low-latency data rendering tabl
 
 ---
 
-## 🏗️ Project Directory Tree & Structural Hierarchy
+## Project Directory Tree & Structural Hierarchy
 
 The solution isolates administrative MVC request controllers, data transfer view models, and styling sheets within decoupled workspace directories:
 
@@ -98,7 +98,7 @@ FlexiFitAdminPanel/
 
 ---
 
-## 🔐 Security Hardening & Data Protection Implementations
+## Security Hardening & Data Protection Implementations
 
 - **Strict Environment Separation:** All raw server credentials, connection settings, and system parameters have been completely migrated away from hardcoded configurations in favor of dynamic `appsettings.json` structural injections.
 - **Decoupled ViewModels Integration:** Presentation layouts never bind directly to domain entities. All data routing fields pass through dedicated validation ViewModels (such as `LoginViewModel` and `DashboardViewModel`) to prevent mass-assignment vulnerabilities.
@@ -106,15 +106,15 @@ FlexiFitAdminPanel/
 
 ---
 
-## 🚀 Local Staging Setup & Local Installation
+## Local Staging Setup & Local Installation
 
-### 📋 Prerequisites
+### Prerequisites
 Ensure your local environment includes the following workspace parameters before running:
 - [.NET Core 8.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 - Integrated Development Environment (Visual Studio 2022 / VS Code)
 - A running instance of the central [FlexiFit REST API](https://github.com/CjConvento/FlexiFit.Api)
 
-### 💻 Installation Instructions
+### Installation Instructions
 
 1. **Clone the repository framework:**
    ```bash
@@ -142,7 +142,7 @@ Ensure your local environment includes the following workspace parameters before
 
 ---
 
-## 📌 Modernization & Scaling Roadmap
+## Modernization & Scaling Roadmap
 
 - [ ] **UI Modernization Track:** Migrate the server-side Razor rendering engine architecture to high-performance component sheets utilizing **Blazor Interactive Server workflows**.
 - [ ] **Bulk Automation Panel:** Implement administrative batch data-upload controls to bulk-insert system video asset elements via `.csv` or `.xlsx` automation.
@@ -150,7 +150,7 @@ Ensure your local environment includes the following workspace parameters before
 
 ---
 
-## 👤 Project Author
+## Project Author
 
 **Natajimura**
 - GitHub: [@CjConvento](https://github.com/CjConvento)
