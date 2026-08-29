@@ -206,33 +206,12 @@
     {
         try
         {
-            Console.WriteLine($"✅ Creating session for user: {user.user_id}");
-
-            var requestBody = new { UserId = user.user_id };
-            Console.WriteLine($"📤 Request: {System.Text.Json.JsonSerializer.Serialize(requestBody)}");
-
-            var response = await Http.PostAsJsonAsync("/Account/CompleteLogin", requestBody);
-
-            Console.WriteLine($"📥 Response Status: {response.StatusCode}");
-
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"📥 Response Content: {content}");
-                Console.WriteLine("✅ Session created successfully, redirecting...");
-                Navigation.NavigateTo("/Home/Index", true);
-            }
-            else
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"❌ Session creation failed: Status={response.StatusCode}, Content={error}");
-                ErrorMessage = $"Session error: {error}";
-            }
+            Console.WriteLine($"✅ Redirecting to CompleteLogin for user: {user.user_id}");
+            NavigationManager.NavigateTo($"/Account/CompleteLogin?userId={user.user_id}", true);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"❌ CreateAdminSession error: {ex.Message}");
-            Console.WriteLine($"Stack trace: {ex.StackTrace}");
             ErrorMessage = $"Session error: {ex.Message}";
         }
     }
