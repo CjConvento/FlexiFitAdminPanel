@@ -16,27 +16,49 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 // ========== FIREBASE ADMIN SDK ==========
-var firebaseCredentialPath = builder.Configuration["Firebase:CredentialPath"] 
-    ?? "Credentials/firebase-service-account.json"; 
-
-if (File.Exists(firebaseCredentialPath))
+try
 {
-    try
+    // ✅ 1. UNAHIN ANG ENVIRONMENT VARIABLE (Para sa Azure)
+    string? firebaseJson = Environment.GetEnvironmentVariable("FIREBASE_SERVICE_ACCOUNT");
+
+    if (!string.IsNullOrEmpty(firebaseJson))
     {
         FirebaseApp.Create(new AppOptions()
         {
-            Credential = GoogleCredential.FromFile(firebaseCredentialPath)
+            Credential = GoogleCredential.FromJson(firebaseJson)
         });
-        Console.WriteLine("✅ Firebase Admin SDK initialized.");
+        Console.WriteLine("✅ Firebase initialized using environment variable.");
     }
-    catch (Exception ex)
+    else
     {
-        Console.WriteLine($"❌ Firebase init failed: {ex.Message}");
+        // ✅ 2. FALLBACK: BASAHIN MULA SA FILE (Para sa Local Development)
+        var firebaseCredentialPath = builder.Configuration["Firebase:CredentialPath"] 
+            ?? "Credentials/firebase-service-account.json";
+
+        if (File.Exists(firebaseCredentialPath))
+        {
+            using var stream = File.OpenRead(firebaseCredentialPath);
+            var credential = GoogleCredential.FromStream(stream);
+            
+            FirebaseApp.Create(new AppOptions()
+            {
+                Credential = credential
+            });
+            Console.WriteLine($"✅ Firebase initialized using file: {firebaseCredentialPath}");
+        }
+        else
+        {
+            // ⚠️ 3. KUNG WALA, MAG-LOG NG WARNING AT HUWAG I-INITIALIZE
+            Console.WriteLine("⚠️ Firebase credentials not found. Skipping Firebase initialization.");
+            Console.WriteLine("   Set FIREBASE_SERVICE_ACCOUNT environment variable or add Credentials/firebase-service-account.json file.");
+        }
     }
 }
-else
+catch (Exception ex)
 {
-    Console.WriteLine($"⚠️ Firebase credential not found at: {firebaseCredentialPath}");
+    Console.WriteLine($"❌ Firebase initialization failed: {ex.Message}");
+    // Optional: throw kung kailangan talaga ang Firebase
+    // throw;
 }
 
 builder.Services.AddControllersWithViews();
