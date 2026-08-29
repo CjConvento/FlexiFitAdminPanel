@@ -363,5 +363,8 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # appsettings
+Credentials/
+firebase-service-account.json
+*.json
 appsettings.json
 appsettings.Development.json

@@ -13,7 +13,7 @@ namespace FlexiFit_AdminPanel.Controllers
         // Constructor injection – gets configuration from appsettings.json
         public WorkoutsController(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("FlexifitDb");
+            _connectionString = configuration.GetConnectionString("FlexifitDb")!;
             if (string.IsNullOrEmpty(_connectionString))
                 throw new InvalidOperationException("Connection string 'FlexifitDb' not found in appsettings.json.");
         }

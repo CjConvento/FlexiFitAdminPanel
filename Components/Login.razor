@@ -1,0 +1,247 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using System.Security.Claims
+@using FlexiFit_AdminPanel.Models
+@using FlexiFit_AdminPanel.Helpers
+@using FirebaseAdmin.Auth
+@using Microsoft.Data.SqlClient
+@using Dapper
+@using Microsoft.JSInterop
+@using System.Net.Http 
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@inject IConfiguration Configuration
+@inject IHttpContextAccessor HttpContextAccessor
+@inject HttpClient Http
+
+<h2>Flexifit Admin</h2>
+<p>Enter your credentials to access the panel</p>
+
+<!-- Error Message -->
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div class="error-msg">
+        <i class="fas fa-exclamation-circle me-1"></i>
+        @ErrorMessage
+    </div>
+}
+
+<!-- 🔥 Google Login Button -->
+<button @onclick="LoginWithGoogle" class="btn-login btn-google">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" 
+         width="20" alt="Google" />
+    Sign in with Google (Admin)
+</button>
+
+<div class="divider">OR</div>
+
+<!-- Manual Login Form -->
+<form @onsubmit="LoginWithPassword" class="manual-form">
+    <div class="mb-3">
+        <label class="form-label">Username</label>
+        <input @bind="Username" class="form-control" placeholder="admin" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input @bind="Password" type="password" class="form-control" placeholder="••••••••" />
+    </div>
+
+    <button type="submit" class="btn-login btn-primary">
+        Sign In <i class="fas fa-arrow-right ms-2"></i>
+    </button>
+</form>
+
+@code {
+    private string Username { get; set; } = "";
+    private string Password { get; set; } = "";
+    private string ErrorMessage { get; set; } = "";
+    private bool IsLoading { get; set; } = false;
+
+    private string ConnectionString => Configuration.GetConnectionString("FlexifitDb")!;
+
+    // 🔥 Google Login with Better Error Handling
+    private async Task LoginWithGoogle()
+    {
+        try
+        {
+            IsLoading = true;
+            ErrorMessage = "";
+
+            Console.WriteLine("🔍 Starting Google login...");
+
+            // Call JavaScript function to get Firebase token
+            var token = await JSRuntime.InvokeAsync<string>("firebaseLogin");
+
+            Console.WriteLine($"🔍 Token received: {(string.IsNullOrEmpty(token) ? "NULL" : "OK")}");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                ErrorMessage = "Failed to get Google token.";
+                return;
+            }
+
+            await ProcessFirebaseToken(token);
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"❌ Task canceled: {ex.Message}");
+            ErrorMessage = "Login was canceled. Please try again.";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Google login error: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            ErrorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    // 🔐 Manual Login
+    private async Task LoginWithPassword()
+    {
+        try
+        {
+            IsLoading = true;
+            ErrorMessage = "";
+
+            if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
+            {
+                ErrorMessage = "Please enter username and password.";
+                return;
+            }
+
+            using var connection = new SqlConnection(ConnectionString);
+            var sql = @"
+                SELECT user_id, username, email, role, firebase_uid, name, password_hash 
+                FROM dbo.usr_users 
+                WHERE username = @Username AND status = 'active'";
+
+            var user = await connection.QueryFirstOrDefaultAsync<User>(
+                sql, new { Username = Username });
+
+            if (user == null)
+            {
+                ErrorMessage = "Invalid credentials.";
+                return;
+            }
+
+            if (user.role?.ToUpper() != "ADMIN")
+            {
+                ErrorMessage = "Admin access required.";
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(user.password_hash))
+            {
+                if (!PasswordHelper.VerifyPassword(Password, user.password_hash))
+                {
+                    ErrorMessage = "Invalid credentials.";
+                    return;
+                }
+            }
+            else
+            {
+                var hashedPassword = PasswordHelper.HashPassword(Password);
+                await UpdatePasswordHash(user.user_id, hashedPassword);
+            }
+
+            await CreateAdminSession(user);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    // 🔥 Process Firebase Token
+    private async Task ProcessFirebaseToken(string firebaseToken)
+    {
+        try
+        {
+            var decodedToken = await FirebaseAuth.DefaultInstance
+                .VerifyIdTokenAsync(firebaseToken);
+
+            var firebaseUid = decodedToken.Uid;
+            var email = decodedToken.Claims.GetValueOrDefault("email")?.ToString();
+
+            using var connection = new SqlConnection(ConnectionString);
+            var sql = @"
+                SELECT user_id, username, email, role, firebase_uid, name 
+                FROM dbo.usr_users 
+                WHERE firebase_uid = @FirebaseUid OR email = @Email";
+
+            var user = await connection.QueryFirstOrDefaultAsync<User>(
+                sql, new { FirebaseUid = firebaseUid, Email = email });
+
+            if (user == null)
+            {
+                ErrorMessage = "User not registered in the system.";
+                return;
+            }
+
+            if (user.role?.ToUpper() != "ADMIN")
+            {
+                ErrorMessage = "Access denied. Admin privileges required.";
+                return;
+            }
+
+            await CreateAdminSession(user);
+        }
+        catch (FirebaseAuthException ex)
+        {
+            ErrorMessage = $"Authentication failed: {ex.Message}";
+        }
+    }
+
+    private async Task CreateAdminSession(User user)
+    {
+        try
+        {
+            Console.WriteLine($"✅ Creating session for user: {user.user_id}");
+
+            var requestBody = new { UserId = user.user_id };
+            Console.WriteLine($"📤 Request: {System.Text.Json.JsonSerializer.Serialize(requestBody)}");
+
+            var response = await Http.PostAsJsonAsync("/Account/CompleteLogin", requestBody);
+
+            Console.WriteLine($"📥 Response Status: {response.StatusCode}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"📥 Response Content: {content}");
+                Console.WriteLine("✅ Session created successfully, redirecting...");
+                Navigation.NavigateTo("/Home/Index", true);
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ Session creation failed: Status={response.StatusCode}, Content={error}");
+                ErrorMessage = $"Session error: {error}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ CreateAdminSession error: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            ErrorMessage = $"Session error: {ex.Message}";
+        }
+    }
+
+    // ✅ Update Password Hash
+    private async Task UpdatePasswordHash(int userId, string hashedPassword)
+    {
+        using var connection = new SqlConnection(ConnectionString);
+        var sql = "UPDATE dbo.usr_users SET password_hash = @Hash WHERE user_id = @UserId";
+        await connection.ExecuteAsync(sql, new { Hash = hashedPassword, UserId = userId });
+    }
+}

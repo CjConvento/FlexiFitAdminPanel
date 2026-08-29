@@ -1,0 +1,123 @@
+/* wwwroot/css/login.css */
+
+body {
+    background-color: #0f172a;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-card {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.login-header h2 {
+    color: #f8fafc;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.login-header p {
+    color: #94a3b8;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+}
+
+.form-label {
+    color: #cbd5e1;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+.form-control {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    color: #f8fafc;
+    border-radius: 8px;
+    padding: 0.75rem;
+}
+
+.form-control:focus {
+    background-color: #0f172a;
+    border-color: #3b82f6;
+    color: #f8fafc;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+.btn-login {
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-login:hover {
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #2563eb;
+}
+
+.btn-google {
+    background-color: #ffffff;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-google:hover {
+    background-color: #f1f5f9;
+}
+
+.divider {
+    text-align: center;
+    margin: 1.5rem 0;
+    color: #94a3b8;
+    font-size: 12px;
+    position: relative;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background-color: #334155;
+}
+
+.divider::before { left: 0; }
+.divider::after { right: 0; }
+
+.error-msg {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}

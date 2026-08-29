@@ -7,7 +7,7 @@ namespace FlexiFit_AdminPanel.Controllers
 {
     public class ActLogsController : Controller
     {
-        private readonly string _connectionString = "Server=10.113.157.21,1433;Database=FLEXIFIT;User Id=cy;Password=N@t@jimur@#cydb;TrustServerCertificate=True;";
+        private readonly string _connectionString = "FlexiFitDb";
 
         public async Task<IActionResult> Index(string search, DateTime? fromDate, DateTime? toDate, int page = 1)
         {
@@ -146,10 +146,10 @@ namespace FlexiFit_AdminPanel.Controllers
     public class ActivityLogItem
     {
         public int user_id { get; set; }
-        public string username { get; set; }
-        public string email { get; set; }
-        public string activity_type { get; set; }
+        public string? username { get; set; }
+        public string? email { get; set; }
+        public string? activity_type { get; set; }
         public DateTime activity_date { get; set; }
-        public string details { get; set; }
+        public string? details { get; set; }
     }
 }

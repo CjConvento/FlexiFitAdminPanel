@@ -28,6 +28,9 @@ namespace FlexiFit_AdminPanel.Models
 
         // E.g., manual, google
         public string auth_provider { get; set; } = "EMAIL";
+        
+        // Passwords Hashed
+        public string? password_hash { get; set; }
 
         // Timestamps
         public DateTime created_at { get; set; } = DateTime.Now;

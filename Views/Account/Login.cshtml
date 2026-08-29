@@ -12,87 +12,19 @@
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <style>
-        body {
-            background-color: #0f172a; /* Darker Navy background katulad ng sa Dashboard */
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
 
-        .login-card {
-            background-color: #1e293b; /* Card background match sa stats cards mo */
-            border: 1px solid #334155;
-            border-radius: 16px;
-            padding: 2.5rem;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-        }
+    <!-- Login CSS -->
+    <link rel="stylesheet" href="~/css/login.css" />
 
-        .login-header h2 {
-            color: #f8fafc;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 0.5rem;
-        }
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
-        .login-header p {
-            color: #94a3b8;
-            text-align: center;
-            margin-bottom: 2rem;
-            font-size: 0.9rem;
-        }
+    <!-- Firebase Config -->
+    <script src="~/js/firebase-config.js"></script>
 
-        .form-label {
-            color: #cbd5e1;
-            font-weight: 500;
-            font-size: 0.85rem;
-        }
-
-        .form-control {
-            background-color: #0f172a;
-            border: 1px solid #334155;
-            color: #f8fafc;
-            border-radius: 8px;
-            padding: 0.75rem;
-        }
-
-            .form-control:focus {
-                background-color: #0f172a;
-                border-color: #3b82f6;
-                color: #f8fafc;
-                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
-            }
-
-        .btn-login {
-            background-color: #3b82f6;
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem;
-            font-weight: 600;
-            width: 100%;
-            margin-top: 1.5rem;
-            transition: all 0.2s;
-        }
-
-            .btn-login:hover {
-                background-color: #2563eb;
-                transform: translateY(-1px);
-            }
-
-        .error-msg {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: #f87171;
-            padding: 0.75rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            margin-bottom: 1rem;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
-    </style>
+    <!-- Firebase Auth JS (for interop) -->
+    <script src="~/js/firebase-auth.js"></script>
 </head>
 <body>
 
@@ -101,32 +33,14 @@
             <div class="text-center mb-3">
                 <i class="fas fa-bolt text-primary fa-3x"></i>
             </div>
-            <h2>Flexifit Admin</h2>
-            <p>Enter your credentials to access the panel</p>
-        </div>
 
-        @if (!ViewData.ModelState.IsValid)
-        {
-            <div class="error-msg text-center">
-                <i class="fas fa-exclamation-circle me-1"></i>
-                @Html.ValidationSummary(true, "")
-            </div>
-        }
-
-        <form asp-controller="Account" asp-action="Login" method="post">
-            <div class="mb-3">
-                <label asp-for="Username" class="form-label">Username</label>
-                <input asp-for="Username" class="form-control" placeholder="admin_user" autocomplete="off" />
-            </div>
-            <div class="mb-3">
-                <label asp-for="Password" class="form-label">Password</label>
-                <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" />
-            </div>
-            <button type="submit" class="btn btn-login btn-primary">
-                Sign In <i class="fas fa-arrow-right ms-2"></i>
-            </button>
-        </form>
+            <!-- ðŸ”¥ Blazor Component -->
+            <component type="typeof(FlexiFit_AdminPanel.Components.Login)" render-mode="Server  " />
+        </div>    
     </div>
+
+<!-- ðŸ”¥ Blazor Server Script -->
+<script src="_framework/blazor.server.js"></script>
 
 </body>
 </html>

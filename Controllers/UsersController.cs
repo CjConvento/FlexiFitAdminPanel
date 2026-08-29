@@ -9,11 +9,19 @@ namespace FlexiFit_AdminPanel.Controllers
         private readonly HttpClient _httpClient;
         private readonly ILogger<UsersController> _logger;
 
-        public UsersController(IHttpClientFactory httpClientFactory, ILogger<UsersController> logger)
+        public UsersController(
+            IHttpClientFactory httpClientFactory, 
+            IConfiguration configuration,
+            ILogger<UsersController> logger
+            )
         {
             _httpClient = httpClientFactory.CreateClient();
-            // Siguraduhing 5160 ang port ng iyong API project window
-            _httpClient.BaseAddress = new Uri("http://localhost:5160/"); 
+            
+            // ✅ Kunin ang BaseUrl mula sa appsettings
+            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] 
+                ?? "https://flexifit-api-bqdrdcchf8faagat.japaneast-01.azurewebsites.net/";
+
+            _httpClient.BaseAddress = new Uri(apiBaseUrl);
             _logger = logger;
         }
 

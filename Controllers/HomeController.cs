@@ -8,7 +8,7 @@ public class HomeController : Controller
 
     public HomeController(IConfiguration configuration)
     {
-        _connectionString = configuration.GetConnectionString("FlexifitDb");
+        _connectionString = configuration.GetConnectionString("FlexifitDb")!;
     }
 
     public async Task<IActionResult> Index()

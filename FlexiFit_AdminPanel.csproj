@@ -4,11 +4,36 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>FlexiFit_AdminPanel</RootNamespace> 
   </PropertyGroup>
 
+    <!-- =============================================== -->
+  <!-- ❌ FIREBASE CREDENTIALS (Local Development Only, Huwag isama sa publish) -->
+  <!-- =============================================== -->
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.72" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
+    <Content Remove="Credentials\**\*" />
+    <None Include="Credentials\**\*" 
+          Condition="Exists('Credentials\firebase-service-account.json')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- =============================================== -->
+  <!-- ❌ appsettings.Development.json (Huwag isama sa publish) -->
+  <!-- =============================================== -->
+  <ItemGroup>
+    <Content Update="appsettings.Development.json">
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Bcrypt.Net-Next" Version="4.2.0" />
+    <PackageReference Include="Dapper" Version="2.1.79" />
+    <PackageReference Include="FirebaseAdmin" Version="3.6.0" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.76.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
   </ItemGroup>
 
   <ItemGroup>

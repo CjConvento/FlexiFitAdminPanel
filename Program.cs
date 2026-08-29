@@ -1,67 +1,79 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Data.SqlClient;
-// Idagdag ito sa itaas
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-// ========== ADD THESE TWO LINES ==========
+// ========== ENVIRONMENT CHECK ==========
 Console.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
-var conn = builder.Configuration.GetConnectionString("FlexifitDb");
-Console.WriteLine($"Connection string used: {conn}");
-// =========================================
 
-using (var testConnection = new SqlConnection(conn))
+// ========== LOAD CONFIG ==========
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+    .AddEnvironmentVariables();
+
+// ========== FIREBASE ADMIN SDK ==========
+var firebaseCredentialPath = builder.Configuration["Firebase:CredentialPath"] 
+    ?? "Credentials/firebase-service-account.json"; 
+
+if (File.Exists(firebaseCredentialPath))
 {
     try
     {
-        testConnection.Open();
-        Console.WriteLine("Database connection successful!");
+        FirebaseApp.Create(new AppOptions()
+        {
+            Credential = GoogleCredential.FromFile(firebaseCredentialPath)
+        });
+        Console.WriteLine("✅ Firebase Admin SDK initialized.");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Direct connection failed: {ex.Message}");
-        if (ex.InnerException != null)
-        {
-            Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-        }
+        Console.WriteLine($"❌ Firebase init failed: {ex.Message}");
     }
 }
-
-using (var testConnection = new SqlConnection(conn))
+else
 {
-    try
-    {
-        testConnection.Open();
-        Console.WriteLine("Database connection successful!");
-
-        // Query the usr_users table
-        using (var command = new SqlCommand("SELECT COUNT(*) FROM usr_users", testConnection))
-        {
-            var count = command.ExecuteScalar();
-            Console.WriteLine($"Number of users in usr_users: {count}");
-        }
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Query failed: {ex.Message}");
-        if (ex.InnerException != null)
-        {
-            Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
-        }
-    }
+    Console.WriteLine($"⚠️ Firebase credential not found at: {firebaseCredentialPath}");
 }
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 builder.Services.AddLogging();
 
-// 1. ADD COOKIE AUTHENTICATION HERE
+// ========== 🔥 BLAZOR SERVICES ==========
+builder.Services.AddRazorPages();
+builder.Services.AddServerSideBlazor();
+
+builder.Services.AddHttpContextAccessor();
+
+// ========== HTTP CLIENT FOR BLAZOR ==========
+builder.Services.AddScoped(sp =>
+{
+    var httpContextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
+    var request = httpContextAccessor.HttpContext?.Request;
+    var baseUri = request != null 
+        ? $"{request.Scheme}://{request.Host}" 
+        : "http://localhost:5100/";
+    
+    return new HttpClient
+    {
+        BaseAddress = new Uri(baseUri)
+    };
+});
+
+// ========== COOKIE AUTH ==========
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/Login"; // Redirect dito kapag hindi naka-login
+        options.LoginPath = "/Account/Login";
         options.AccessDeniedPath = "/Account/AccessDenied";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
     });
 
 var app = builder.Build();
@@ -72,6 +84,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// ========== REQUEST LOGGING (FOR DEBUGGING) ==========
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"📨 {context.Request.Method} {context.Request.Path}");
+    await next();
+});
+
 app.UseStaticFiles();
 app.UseRouting();
 
@@ -79,8 +98,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// ========== 🔥 BLAZOR ENDPOINTS ==========
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Login}/{id?}"); // Default page is Login
+    pattern: "{controller=Account}/{action=Login}/{id?}");
+
+app.MapRazorPages();
+app.MapBlazorHub();  // ✅ SignalR hub para sa Blazor Server
 
 app.Run();
