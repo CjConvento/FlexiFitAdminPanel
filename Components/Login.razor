@@ -59,7 +59,7 @@
     private string ErrorMessage { get; set; } = "";
     private bool IsLoading { get; set; } = false;
 
-    private string ConnectionString => Configuration.GetConnectionString("FlexifitDb")!;
+    private string ConnectionString => Configuration.GetConnectionString("FlexifitDb");
 
     // 🔥 Google Login with Better Error Handling
     private async Task LoginWithGoogle()
@@ -150,11 +150,18 @@
                 await UpdatePasswordHash(user.user_id, hashedPassword);
             }
 
+            // ✅ Validate user_id before redirect
+            if (user.user_id <= 0)
+            {
+                ErrorMessage = "Invalid user ID. Please try again.";
+                return;
+            }
+
             await CreateAdminSession(user);
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Error: {ex.Message}";
+            ErrorMessage = $"Login error: {ex.Message}";
         }
         finally
         {
@@ -206,8 +213,13 @@
     {
         try
         {
+            if (user == null || user.user_id <= 0)
+            {
+                ErrorMessage = "Invalid user data. Please try again.";
+                return;
+            }
+
             Console.WriteLine($"✅ Redirecting to CompleteLogin for user: {user.user_id}");
-            // ✅ TAMA — gamit ang injected Navigation instance
             Navigation.NavigateTo($"/Account/CompleteLogin?userId={user.user_id}", true);
         }
         catch (Exception ex)
