@@ -1,6 +1,6 @@
 @model FlexiFit_AdminPanel.Models.LoginViewModel
 @{
-    Layout = null; // Para hindi sumama ang sidebar dito
+    Layout = null;
     ViewData["Title"] = "Admin Login";
 }
 
@@ -34,13 +34,13 @@
                 <i class="fas fa-bolt text-primary fa-3x"></i>
             </div>
 
-            <!-- 🔥 Blazor Component -->
-            <component type="typeof(FlexiFit_AdminPanel.Components.Login)" render-mode="Server" />
+            <!-- ✅ FIXED: ServerPrerendered para may laman kahit walang SignalR -->
+            <component type="typeof(FlexiFit_AdminPanel.Components.Login)" render-mode="ServerPrerendered" />
         </div>    
     </div>
 
-<!-- 🔥 Blazor Server Script -->
-<script src="/_framework/blazor.server.js"></script>
+    <!-- Blazor Server Script -->
+    <script src="/_framework/blazor.server.js"></script>
 
 </body>
 </html>
