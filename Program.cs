@@ -121,11 +121,15 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // ========== 🔥 BLAZOR ENDPOINTS ==========
+app.MapRazorPages();
+app.MapBlazorHub();
+
+// ✅ MVC Routes — ensure na ang root path ay mapunta sa Account/Login
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
-app.MapRazorPages();
-app.MapBlazorHub();  // ✅ SignalR hub para sa Blazor Server
+// ✅ Fallback para sa mga request na hindi na-match
+app.MapFallbackToController("Login", "Account");    
 
 app.Run();
