@@ -207,7 +207,8 @@
         try
         {
             Console.WriteLine($"✅ Redirecting to CompleteLogin for user: {user.user_id}");
-            NavigationManager.NavigateTo($"/Account/CompleteLogin?userId={user.user_id}", true);
+            // ✅ TAMA — gamit ang injected Navigation instance
+            Navigation.NavigateTo($"/Account/CompleteLogin?userId={user.user_id}", true);
         }
         catch (Exception ex)
         {
