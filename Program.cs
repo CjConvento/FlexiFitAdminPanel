@@ -98,6 +98,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
     });
 
+// ========== LOGGING CONFIGURATION ==========
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole(); // Ito ang magpapadala ng logs sa Log Stream
+builder.Logging.AddDebug();   // Para sa local debugging
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

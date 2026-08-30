@@ -9,12 +9,15 @@
 @using Microsoft.Data.SqlClient
 @using Dapper
 @using Microsoft.JSInterop
-@using System.Net.Http 
+@using System.Net.Http
+@using Microsoft.Extensions.Logging
+
 @inject NavigationManager Navigation
 @inject IJSRuntime JSRuntime
 @inject IConfiguration Configuration
 @inject IHttpContextAccessor HttpContextAccessor
 @inject HttpClient Http
+@inject ILogger<Login> Logger
 
 <h2>Flexifit Admin</h2>
 <p>Enter your credentials to access the panel</p>
@@ -59,9 +62,10 @@
     private string ErrorMessage { get; set; } = "";
     private bool IsLoading { get; set; } = false;
 
-    private string ConnectionString => Configuration.GetConnectionString("FlexifitDb");
+    private string ConnectionString => Configuration.GetConnectionString("FlexifitDb")
+        ?? throw new InvalidOperationException("Connection string 'FlexifitDb' not found.");
 
-    // 🔥 Google Login with Better Error Handling
+    // 🔥 Google Login
     private async Task LoginWithGoogle()
     {
         try
@@ -69,12 +73,11 @@
             IsLoading = true;
             ErrorMessage = "";
 
-            Console.WriteLine("🔍 Starting Google login...");
+            Logger.LogInformation("🔍 Starting Google login...");
 
-            // Call JavaScript function to get Firebase token
             var token = await JSRuntime.InvokeAsync<string>("firebaseLogin");
 
-            Console.WriteLine($"🔍 Token received: {(string.IsNullOrEmpty(token) ? "NULL" : "OK")}");
+            Logger.LogInformation("🔍 Token received: {Status}", string.IsNullOrEmpty(token) ? "NULL" : "OK");
 
             if (string.IsNullOrEmpty(token))
             {
@@ -86,13 +89,12 @@
         }
         catch (TaskCanceledException ex)
         {
-            Console.WriteLine($"❌ Task canceled: {ex.Message}");
+            Logger.LogWarning(ex, "❌ Task canceled during Google login");
             ErrorMessage = "Login was canceled. Please try again.";
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Google login error: {ex.Message}");
-            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            Logger.LogError(ex, "❌ Google login error");
             ErrorMessage = $"Error: {ex.Message}";
         }
         finally
@@ -109,50 +111,67 @@
             IsLoading = true;
             ErrorMessage = "";
 
+            Logger.LogInformation("🔍 Login attempt for username: {Username}", Username);
+
             if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
             {
+                Logger.LogWarning("❌ Username or password is empty");
                 ErrorMessage = "Please enter username and password.";
                 return;
             }
 
             using var connection = new SqlConnection(ConnectionString);
+            Logger.LogInformation("📡 Opening database connection...");
+
             var sql = @"
                 SELECT user_id, username, email, role, firebase_uid, name, password_hash 
                 FROM dbo.usr_users 
                 WHERE username = @Username AND status = 'active'";
+
+            Logger.LogInformation("📝 Executing query for username: {Username}", Username);
 
             var user = await connection.QueryFirstOrDefaultAsync<User>(
                 sql, new { Username = Username });
 
             if (user == null)
             {
+                Logger.LogWarning("❌ User not found: {Username}", Username);
                 ErrorMessage = "Invalid credentials.";
                 return;
             }
 
+            Logger.LogInformation("✅ User found: {Username}, Role: {Role}, ID: {UserId}", user.username, user.role, user.user_id);
+
             if (user.role?.ToUpper() != "ADMIN")
             {
+                Logger.LogWarning("❌ User {Username} is not ADMIN (Role: {Role})", user.username, user.role);
                 ErrorMessage = "Admin access required.";
                 return;
             }
 
             if (!string.IsNullOrEmpty(user.password_hash))
             {
+                Logger.LogInformation("🔐 Verifying password hash for user: {Username}", user.username);
                 if (!PasswordHelper.VerifyPassword(Password, user.password_hash))
                 {
+                    Logger.LogWarning("❌ Password verification failed for user: {Username}", user.username);
                     ErrorMessage = "Invalid credentials.";
                     return;
                 }
+                Logger.LogInformation("✅ Password verified for user: {Username}", user.username);
             }
             else
             {
+                Logger.LogInformation("🔐 Creating password hash for user: {Username}", user.username);
                 var hashedPassword = PasswordHelper.HashPassword(Password);
                 await UpdatePasswordHash(user.user_id, hashedPassword);
+                Logger.LogInformation("✅ Password hash created for user: {Username}", user.username);
             }
 
-            // ✅ Validate user_id before redirect
+            // Validate user_id before redirect
             if (user.user_id <= 0)
             {
+                Logger.LogWarning("❌ Invalid user ID: {UserId} for user: {Username}", user.user_id, user.username);
                 ErrorMessage = "Invalid user ID. Please try again.";
                 return;
             }
@@ -161,6 +180,7 @@
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "❌ Login error for username: {Username}", Username);
             ErrorMessage = $"Login error: {ex.Message}";
         }
         finally
@@ -174,11 +194,14 @@
     {
         try
         {
+            Logger.LogInformation("🔥 Verifying Firebase token...");
             var decodedToken = await FirebaseAuth.DefaultInstance
                 .VerifyIdTokenAsync(firebaseToken);
 
             var firebaseUid = decodedToken.Uid;
             var email = decodedToken.Claims.GetValueOrDefault("email")?.ToString();
+
+            Logger.LogInformation("🔥 Firebase user: UID={FirebaseUid}, Email={Email}", firebaseUid, email);
 
             using var connection = new SqlConnection(ConnectionString);
             var sql = @"
@@ -191,12 +214,16 @@
 
             if (user == null)
             {
+                Logger.LogWarning("❌ Firebase user not found in database: {FirebaseUid}", firebaseUid);
                 ErrorMessage = "User not registered in the system.";
                 return;
             }
 
+            Logger.LogInformation("✅ Firebase user found: {Username}, Role: {Role}", user.username, user.role);
+
             if (user.role?.ToUpper() != "ADMIN")
             {
+                Logger.LogWarning("❌ Firebase user {Username} is not ADMIN", user.username);
                 ErrorMessage = "Access denied. Admin privileges required.";
                 return;
             }
@@ -205,7 +232,13 @@
         }
         catch (FirebaseAuthException ex)
         {
+            Logger.LogError(ex, "❌ Firebase authentication failed");
             ErrorMessage = $"Authentication failed: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "❌ Firebase login error");
+            ErrorMessage = $"Error: {ex.Message}";
         }
     }
 
@@ -215,16 +248,17 @@
         {
             if (user == null || user.user_id <= 0)
             {
+                Logger.LogWarning("❌ Invalid user data in CreateAdminSession");
                 ErrorMessage = "Invalid user data. Please try again.";
                 return;
             }
 
-            Console.WriteLine($"✅ Redirecting to CompleteLogin for user: {user.user_id}");
+            Logger.LogInformation("✅ Redirecting to CompleteLogin for user: {Username} (ID: {UserId})", user.username, user.user_id);
             Navigation.NavigateTo($"/Account/CompleteLogin?userId={user.user_id}", true);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ CreateAdminSession error: {ex.Message}");
+            Logger.LogError(ex, "❌ CreateAdminSession error for user: {Username}", user?.username);
             ErrorMessage = $"Session error: {ex.Message}";
         }
     }
@@ -232,8 +266,17 @@
     // ✅ Update Password Hash
     private async Task UpdatePasswordHash(int userId, string hashedPassword)
     {
-        using var connection = new SqlConnection(ConnectionString);
-        var sql = "UPDATE dbo.usr_users SET password_hash = @Hash WHERE user_id = @UserId";
-        await connection.ExecuteAsync(sql, new { Hash = hashedPassword, UserId = userId });
+        try
+        {
+            using var connection = new SqlConnection(ConnectionString);
+            var sql = "UPDATE dbo.usr_users SET password_hash = @Hash WHERE user_id = @UserId";
+            await connection.ExecuteAsync(sql, new { Hash = hashedPassword, UserId = userId });
+            Logger.LogInformation("✅ Password hash updated for user ID: {UserId}", userId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "❌ Failed to update password hash for user ID: {UserId}", userId);
+            throw;
+        }
     }
 }
