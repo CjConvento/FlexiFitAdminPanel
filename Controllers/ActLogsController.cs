@@ -2,19 +2,17 @@
 using Microsoft.Data.SqlClient;
 using Dapper;
 using FlexiFit_AdminPanel.Models;
-using System.Data;
 
 namespace FlexiFit_AdminPanel.Controllers
 {
     public class ActLogsController : Controller
     {
         private readonly string _connectionString;
-        
-        // ✅ Constructor — basahin mula sa configuration
+
         public ActLogsController(IConfiguration configuration)
         {
-        _connectionString = configuration.GetConnectionString("FlexifitDb")
-            ?? throw new InvalidOperationException("Connection string 'FlexifitDb' not found.");
+            _connectionString = configuration.GetConnectionString("FlexifitDb")
+                ?? throw new InvalidOperationException("Connection string 'FlexifitDb' not found.");
         }
 
         public async Task<IActionResult> Index(string search, DateTime? fromDate, DateTime? toDate, int page = 1)
@@ -89,14 +87,12 @@ namespace FlexiFit_AdminPanel.Controllers
                     parameters.Add("@toDate", toDate.Value);
                 }
 
-                // Order and pagination
                 sql += " ORDER BY a.activity_date DESC OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
                 parameters.Add("@offset", (page - 1) * pageSize);
                 parameters.Add("@pageSize", pageSize);
 
                 var logs = await connection.QueryAsync<ActivityLogItem>(sql, parameters);
 
-                // Count query
                 string countSql = @"
                     SELECT COUNT(*)
                     FROM (
