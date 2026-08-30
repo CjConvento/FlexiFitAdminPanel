@@ -65,10 +65,6 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
 builder.Services.AddLogging();
 
-// ========== 🔥 BLAZOR SERVICES ==========
-builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
-
 builder.Services.AddHttpContextAccessor();
 
 // ========== HTTP CLIENT FOR BLAZOR ==========
@@ -125,9 +121,9 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ========== 🔥 BLAZOR ENDPOINTS ==========
-app.MapRazorPages();
-app.MapBlazorHub();
+// // ==========  BLAZOR ENDPOINTS ==========
+// app.MapRazorPages();
+// app.MapBlazorHub();
 
 // ✅ MVC Routes — ensure na ang root path ay mapunta sa Account/Login
 app.MapControllerRoute(
