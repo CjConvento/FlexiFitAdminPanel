@@ -14,8 +14,8 @@ namespace FlexiFit_AdminPanel.Controllers
             _connectionString = configuration.GetConnectionString("FlexifitDb")
                 ?? throw new InvalidOperationException("Connection string 'FlexifitDb' not found.");
 
-            // ✅ I-log ang connection string (i-mask ang password)
-            Console.WriteLine($"🔍 Connection string loaded: {_connectionString}");
+            // ✅ REMOVE OR MASK THE PASSWORD
+            // Console.WriteLine($"🔍 Connection string loaded: {_connectionString}");
             Console.WriteLine($"🔍 Length: {_connectionString.Length}");
         }
 
