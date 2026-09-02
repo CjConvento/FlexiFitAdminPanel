@@ -4,6 +4,8 @@ using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using FlexiFit_AdminPanel.Helpers; 
 
+Console.WriteLine($"🚀 DEPLOYED VERSION: 2.1 at {DateTime.UtcNow:HH:mm:ss}");
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ========== ENVIRONMENT CHECK ==========
