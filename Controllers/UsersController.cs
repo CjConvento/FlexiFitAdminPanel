@@ -1,12 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using FlexiFit_AdminPanel.Models;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using FlexiFit_AdminPanel.Models;
 
 namespace FlexiFit_AdminPanel.Controllers
 {
+    [Authorize(Roles = "ADMIN")]  // ✅ Siguraduhin na ADMIN lang ang may access
     public class UsersController : Controller
     {
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _apiBaseUrl;
         private readonly ILogger<UsersController> _logger;
 
         public UsersController(
@@ -15,14 +20,35 @@ namespace FlexiFit_AdminPanel.Controllers
             ILogger<UsersController> logger
             )
         {
-            _httpClient = httpClientFactory.CreateClient();
-            
-            // ✅ Kunin ang BaseUrl mula sa appsettings
-            var apiBaseUrl = configuration["ApiSettings:BaseUrl"] 
-                ?? "https://flexifit-api-bqdrdcchf8faagat.japaneast-01.azurewebsites.net/";
-
-            _httpClient.BaseAddress = new Uri(apiBaseUrl);
+            _httpClientFactory = httpClientFactory;
+            _apiBaseUrl = configuration["ApiSettings:BaseUrl"]
+                ?? throw new InvalidOperationException("API Base URL not configured.");
             _logger = logger;
+        }
+
+        // ✅ HELPER: Gumawa ng HttpClient na may JWT token
+        private async Task<HttpClient?> CreateAuthorizedClientAsync()
+        {
+            var token = HttpContext.Session.GetString("JwtToken");
+
+            if (string.IsNullOrEmpty(token))
+            {
+                _logger.LogWarning("❌ No JWT token found in session.");
+                return null;
+            }
+
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri(_apiBaseUrl);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            return client;
+        }
+
+        // ✅ HELPER: I-handle ang 401 Unauthorized
+        private IActionResult HandleUnauthorized()
+        {
+            _logger.LogWarning("⛔ Unauthorized access detected. Redirecting to Login.");
+            return RedirectToAction("Login", "Account");
         }
 
         // 1. DISPLAY ALL USERS
@@ -30,39 +56,43 @@ namespace FlexiFit_AdminPanel.Controllers
         {
             try
             {
-                _logger.LogInformation("Admin Panel: Fetching users from API...");
+                var client = await CreateAuthorizedClientAsync();
+                if (client == null) return HandleUnauthorized();
 
-                // Dagdagan natin ng log para makita kung ano ang saktong URL na tinatawag
-                var response = await _httpClient.GetAsync("api/users");
+                _logger.LogInformation("📡 Fetching users from API...");
 
-                if (response.IsSuccessStatusCode)
+                var response = await client.GetAsync("api/users");
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    var users = await response.Content.ReadFromJsonAsync<List<User>>();
-                    _logger.LogInformation("Admin Panel: Successfully fetched {Count} users.", users?.Count ?? 0);
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        return HandleUnauthorized();
 
-                    if (!string.IsNullOrEmpty(searchTerm) && users != null)
-                    {
-                        searchTerm = searchTerm.ToLower().Trim();
-                        users = users.Where(u =>
-                            (u.username?.ToLower().Contains(searchTerm) ?? false) ||
-                            (u.email?.ToLower().Contains(searchTerm) ?? false) ||
-                            (u.name?.ToLower().Contains(searchTerm) ?? false)
-                        ).ToList();
-                    }
-
-                    return View(users ?? new List<User>());
-                }
-                else
-                {
-                    _logger.LogWarning("API Error: {Status}", response.StatusCode);
-                    TempData["Error"] = $"API Error: {response.StatusCode}";
+                    // ✅ Huwag i-log ang buong error body
+                    _logger.LogError("❌ API error: {StatusCode}", response.StatusCode);
+                    ModelState.AddModelError(string.Empty, "Unable to fetch users.");
                     return View(new List<User>());
                 }
+
+                var users = await response.Content.ReadFromJsonAsync<List<User>>();
+                _logger.LogInformation("✅ Retrieved {Count} users.", users?.Count ?? 0);
+
+                // Optional: Search
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    users = users?.Where(u =>
+                        u.username?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) == true ||
+                        u.email?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) == true
+                    ).ToList();
+                }
+
+                return View(users ?? new List<User>());
             }
             catch (Exception ex)
             {
-                _logger.LogError("Critical Connection Error: {Message}", ex.Message);
-                TempData["Error"] = "Hindi makakonekta sa API. Pakisiguradong running ang API project sa port 5160.";
+                // ✅ Safe: structured logging
+                _logger.LogError(ex, "❌ Error fetching users");
+                ModelState.AddModelError(string.Empty, "An error occurred while fetching users.");
                 return View(new List<User>());
             }
         }
@@ -74,67 +104,6 @@ namespace FlexiFit_AdminPanel.Controllers
             return View();
         }
 
-        // 5. GET: EDIT PAGE
-        [HttpGet]
-        public async Task<IActionResult> Edit(int id)
-        {
-            try
-            {
-                _logger.LogInformation("Fetching user ID {Id} for edit", id);
-                var response = await _httpClient.GetAsync($"api/users/{id}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var user = await response.Content.ReadFromJsonAsync<User>();
-                    if (user == null)
-                        return NotFound();
-
-                    return View(user);
-                }
-                else
-                {
-                    _logger.LogWarning("API returned {StatusCode} when fetching user {Id}", response.StatusCode, id);
-                    TempData["Error"] = $"User not found (ID: {id})";
-                    return RedirectToAction(nameof(Index));
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching user {Id}", id);
-                TempData["Error"] = "Unable to connect to API. Please ensure the API is running on port 5160.";
-                return RedirectToAction(nameof(Index));
-            }
-        }
-
-        // 6. POST: UPDATE USER
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(User user)
-        {
-            try
-            {
-                _logger.LogInformation("Updating user ID {Id}", user.user_id);
-                var response = await _httpClient.PutAsJsonAsync($"api/users/{user.user_id}", user);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    TempData["Success"] = "User updated successfully!";
-                    return RedirectToAction(nameof(Index));
-                }
-
-                var errorMsg = await response.Content.ReadAsStringAsync();
-                _logger.LogWarning("API update failed for user {Id}: {Error}", user.user_id, errorMsg);
-                ModelState.AddModelError(string.Empty, $"Update failed: {errorMsg}");
-                return View(user);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating user {Id}", user.user_id);
-                ModelState.AddModelError(string.Empty, "API is unreachable. Please check the connection.");
-                return View(user);
-            }
-        }
-
         // 3. POST: PROCESS CREATE
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -142,69 +111,147 @@ namespace FlexiFit_AdminPanel.Controllers
         {
             try
             {
-                // A. Siguraduhing may Firebase UID (Important for API)
+                var client = await CreateAuthorizedClientAsync();
+                if (client == null) return HandleUnauthorized();
+
                 if (string.IsNullOrEmpty(user.firebase_uid))
                 {
                     user.firebase_uid = "ADMIN-GEN-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
                 }
 
-                // B. REVISE: Kunin ang provider mula sa form (EMAIL or GOOGLE)
-                // Kung null, default natin sa EMAIL para safe sa SQL Constraint
                 user.auth_provider = user.auth_provider?.ToUpper() ?? "EMAIL";
-
-                // C. Default Role
                 user.role = user.role?.ToUpper() ?? "USER";
 
-                _logger.LogInformation("Sending request to API for: {Email} with Provider: {Provider}", user.email, user.auth_provider);
+                // ✅ Safe: email lang
+                _logger.LogInformation("📡 Creating user with email: {Email}", user.email);
 
-                var response = await _httpClient.PostAsJsonAsync("api/users/admin-create", user);
+                var response = await client.PostAsJsonAsync("api/users/admin-create", user);
 
-                if (response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode)
                 {
-                    TempData["Success"] = "User created successfully!";
-                    return RedirectToAction(nameof(Index));
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        return HandleUnauthorized();
+
+                    _logger.LogWarning("❌ API create failed: {StatusCode}", response.StatusCode);
+                    ModelState.AddModelError(string.Empty, "Failed to create user.");
+                    return View(user);
                 }
 
-                var errorMsg = await response.Content.ReadAsStringAsync();
-                _logger.LogWarning("API Error Response: {Error}", errorMsg);
-                ModelState.AddModelError(string.Empty, $"Failed: {errorMsg}");
+                TempData["Success"] = "User created successfully!";
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                _logger.LogCritical("Critical Error connecting to API: {Message}", ex.Message);
-                ModelState.AddModelError(string.Empty, "API is unreachable.");
+                _logger.LogError(ex, "❌ Error creating user with email: {Email}", user.email);
+                ModelState.AddModelError(string.Empty, "API is unreachable. Please check the connection.");
+                return View(user);
             }
-
-            return View(user);
         }
 
-        // 4. POST: DELETE USER (Dagdag ito para gumana ang Trash Icon)
+        // 4. GET: EDIT PAGE
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            try
+            {
+                var client = await CreateAuthorizedClientAsync();
+                if (client == null) return HandleUnauthorized();
+
+                _logger.LogInformation($"📡 Fetching user ID {id} for edit");
+
+                var response = await client.GetAsync($"api/users/{id}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        return HandleUnauthorized();
+
+                    _logger.LogWarning("❌ API returned {StatusCode} when fetching user {Id}", response.StatusCode, id);                    TempData["Error"] = $"User not found (ID: {id})";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var user = await response.Content.ReadFromJsonAsync<User>();
+                if (user == null) return NotFound();
+
+                return View(user);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error fetching user ID: {UserId}", id);
+                TempData["Error"] = "Unable to connect to API. Please check the connection.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // 5. POST: UPDATE USER
+        // EDIT (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(User user)
+        {
+            try
+            {
+                var client = await CreateAuthorizedClientAsync();
+                if (client == null) return HandleUnauthorized();
+
+                _logger.LogInformation("📡 Updating user ID: {UserId}", user.user_id);
+
+                var response = await client.PutAsJsonAsync($"api/users/{user.user_id}", user);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        return HandleUnauthorized();
+
+                    _logger.LogWarning("❌ API update failed: {StatusCode} for user ID: {UserId}", response.StatusCode, user.user_id);
+                    ModelState.AddModelError(string.Empty, "Update failed.");
+                    return View(user);
+                }
+
+                TempData["Success"] = "User updated successfully!";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error updating user ID: {UserId}", user.user_id);
+                ModelState.AddModelError(string.Empty, "API is unreachable. Please check the connection.");
+                return View(user);
+            }
+        }
+
+        // 6. DELETE
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                _logger.LogInformation("Deleting user ID: {Id}", id);
-                var response = await _httpClient.DeleteAsync($"api/users/{id}");
+                var client = await CreateAuthorizedClientAsync();
+                if (client == null) return HandleUnauthorized();
 
-                if (response.IsSuccessStatusCode)
+                _logger.LogInformation("📡 Deleting user ID: {UserId}", id);
+
+                var response = await client.DeleteAsync($"api/users/{id}");
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    TempData["Success"] = "User deleted successfully!";
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        return HandleUnauthorized();
+
+                    _logger.LogWarning("❌ API delete failed: {StatusCode} for user ID: {UserId}", response.StatusCode, id);
+                    TempData["Error"] = "Unable to delete user. It might be in use.";
+                    return RedirectToAction(nameof(Index));
                 }
-                else
-                {
-                    TempData["Error"] = "Hindi mabura ang user. Baka ginagamit pa sa ibang records.";
-                }
+
+                TempData["Success"] = "User deleted successfully!";
             }
             catch (Exception ex)
             {
-                _logger.LogError("Delete Error: {Message}", ex.Message);
+                _logger.LogError(ex, "❌ Error deleting user ID: {UserId}", id);
                 TempData["Error"] = "Connection to API failed during delete.";
             }
 
             return RedirectToAction(nameof(Index));
         }
-
     }
 }

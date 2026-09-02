@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Data.SqlClient;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using FlexiFit_AdminPanel.Helpers; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,6 +99,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole(); // Ito ang magpapadala ng logs sa Log Stream
 builder.Logging.AddDebug();   // Para sa local debugging
+
+ApiUrlHelper.Configure(builder.Configuration);
 
 var app = builder.Build();
 

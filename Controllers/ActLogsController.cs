@@ -1,157 +1,185 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Dapper;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using FlexiFit_AdminPanel.Models;
 
 namespace FlexiFit_AdminPanel.Controllers
 {
+    [Authorize(Roles = "ADMIN")]
     public class ActLogsController : Controller
     {
-        private readonly string _connectionString;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _apiBaseUrl;
+        private readonly ILogger<ActLogsController> _logger;
 
-        public ActLogsController(IConfiguration configuration)
+        public ActLogsController(
+            IHttpClientFactory httpClientFactory,
+            IConfiguration configuration,
+            ILogger<ActLogsController> logger)
         {
-            _connectionString = configuration.GetConnectionString("FlexifitDb")
-                ?? throw new InvalidOperationException("Connection string 'FlexifitDb' not found.");
-
-            // ✅ REMOVE OR MASK THE PASSWORD
-            // Console.WriteLine($"🔍 Connection string loaded: {_connectionString}");
-            Console.WriteLine($"🔍 Length: {_connectionString.Length}");
+            _httpClientFactory = httpClientFactory;
+            _apiBaseUrl = configuration["ApiSettings:BaseUrl"]
+                ?? throw new InvalidOperationException("API Base URL not configured.");
+            _logger = logger;
         }
 
-        public async Task<IActionResult> Index(string search, DateTime? fromDate, DateTime? toDate, int page = 1)
+        private async Task<HttpClient?> CreateAuthorizedClientAsync()
         {
-            Console.WriteLine("🔍 ActLogsController.Index() called");
+            var token = HttpContext.Session.GetString("JwtToken");
 
+            if (string.IsNullOrEmpty(token))
+            {
+                _logger.LogWarning("❌ No JWT token found in session.");
+                return null;
+            }
+
+            var client = _httpClientFactory.CreateClient();
+            client.BaseAddress = new Uri(_apiBaseUrl);
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
+            return client;
+        }
+
+        private IActionResult HandleUnauthorized()
+        {
+            _logger.LogWarning("⛔ Unauthorized access detected. Redirecting to Login.");
+            return RedirectToAction("Login", "Account");
+        }
+
+        // 1. INDEX: Ipakita ang lahat ng activity logs (with filters)
+        public async Task<IActionResult> Index(
+            string? search = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            int page = 1)
+        {
             try
             {
-                const int pageSize = 20;
+                var client = await CreateAuthorizedClientAsync();
+                if (client == null) return HandleUnauthorized();
 
-                using var connection = new SqlConnection(_connectionString);
-                Console.WriteLine("📡 Opening connection to Azure SQL...");
+                _logger.LogInformation("📡 Fetching all activity logs from API...");
 
-                var parameters = new DynamicParameters();
-
-                string sql = @"
-                    SELECT 
-                        a.user_id,
-                        u.username,
-                        u.email,
-                        a.activity_type,
-                        a.activity_date,
-                        a.details
-                    FROM (
-                        SELECT 
-                            s.user_id,
-                            'Workout' AS activity_type,
-                            CAST(s.completed_at AS DATE) AS activity_date,
-                            CONCAT('Completed workout: ', w.workout_name, ' (Day ', s.workout_day, ')') AS details
-                        FROM usr_user_workout_sessions s
-                        INNER JOIN usr_user_session_workouts sw ON s.session_id = sw.session_id
-                        INNER JOIN wrk_workouts w ON sw.workout_id = w.workout_id
-                        WHERE s.status = 'Completed'
-                    
-                        UNION ALL
-                    
-                        SELECT 
-                            d.user_id,
-                            'Nutrition' AS activity_type,
-                            d.plan_date AS activity_date,
-                            CONCAT('Logged meals: ', d.calories_consumed, ' kcal consumed, ', d.calories_burned, ' kcal burned') AS details
-                        FROM ntr_daily_logs d
-                        WHERE d.marked_done_at IS NOT NULL
-                    
-                        UNION ALL
-                    
-                        SELECT 
-                            w.user_id,
-                            'Water' AS activity_type,
-                            w.log_date AS activity_date,
-                            CONCAT('Logged ', w.water_ml, ' ml water') AS details
-                        FROM ntr_water_logs w
-                    ) a
-                    INNER JOIN usr_users u ON a.user_id = u.user_id
-                    WHERE 1=1
-                ";
-
-                // Apply filters
+                // Build query parameters
+                var queryParams = new List<string>();
                 if (!string.IsNullOrEmpty(search))
-                {
-                    sql += " AND (u.username LIKE @search OR u.email LIKE @search OR a.details LIKE @search)";
-                    parameters.Add("@search", $"%{search}%");
-                }
+                    queryParams.Add($"search={Uri.EscapeDataString(search)}");
                 if (fromDate.HasValue)
-                {
-                    sql += " AND a.activity_date >= @fromDate";
-                    parameters.Add("@fromDate", fromDate.Value);
-                }
+                    queryParams.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
                 if (toDate.HasValue)
+                    queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
+                queryParams.Add($"page={page}");
+                queryParams.Add($"pageSize=20");
+
+                var url = "api/actlogs/admin/all";
+                if (queryParams.Any())
+                    url += "?" + string.Join("&", queryParams);
+
+                var response = await client.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    sql += " AND a.activity_date <= @toDate";
-                    parameters.Add("@toDate", toDate.Value);
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        return HandleUnauthorized();
+
+                    _logger.LogError("❌ API error: {StatusCode}", response.StatusCode);
+                    ModelState.AddModelError(string.Empty, "Unable to fetch activity logs.");
+                    return View(new List<ActivityLogItem>());
                 }
 
-                sql += " ORDER BY a.activity_date DESC OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
-                parameters.Add("@offset", (page - 1) * pageSize);
-                parameters.Add("@pageSize", pageSize);
+                var result = await response.Content.ReadFromJsonAsync<ActivityLogResponse>();
+                var logs = result?.Data ?? new List<ActivityLogItem>();
 
-                var logs = await connection.QueryAsync<ActivityLogItem>(sql, parameters);
-
-                string countSql = @"
-                    SELECT COUNT(*)
-                    FROM (
-                        SELECT a.user_id
-                        FROM (
-                            SELECT s.user_id, CAST(s.completed_at AS DATE) AS activity_date
-                            FROM usr_user_workout_sessions s
-                            INNER JOIN usr_user_session_workouts sw ON s.session_id = sw.session_id
-                            INNER JOIN wrk_workouts w ON sw.workout_id = w.workout_id
-                            WHERE s.status = 'Completed'
-                            UNION ALL
-                            SELECT d.user_id, d.plan_date AS activity_date
-                            FROM ntr_daily_logs d
-                            WHERE d.marked_done_at IS NOT NULL
-                            UNION ALL
-                            SELECT w.user_id, w.log_date AS activity_date
-                            FROM ntr_water_logs w
-                        ) a
-                        INNER JOIN usr_users u ON a.user_id = u.user_id
-                        WHERE 1=1
-                ";
-
-                if (!string.IsNullOrEmpty(search))
-                {
-                    countSql += " AND (u.username LIKE @search OR u.email LIKE @search)";
-                }
-                if (fromDate.HasValue)
-                {
-                    countSql += " AND a.activity_date >= @fromDate";
-                }
-                if (toDate.HasValue)
-                {
-                    countSql += " AND a.activity_date <= @toDate";
-                }
-
-                countSql += " ) AS total";
-
-                var total = await connection.ExecuteScalarAsync<int>(countSql, parameters);
+                _logger.LogInformation("✅ Retrieved {Count} activity logs (Total: {Total})", logs.Count, result?.Total ?? 0);
 
                 ViewBag.CurrentPage = page;
-                ViewBag.TotalPages = (int)Math.Ceiling(total / (double)pageSize);
+                ViewBag.TotalPages = result?.TotalPages ?? 1;
                 ViewBag.Search = search;
                 ViewBag.FromDate = fromDate?.ToString("yyyy-MM-dd");
                 ViewBag.ToDate = toDate?.ToString("yyyy-MM-dd");
 
-                Console.WriteLine($"✅ Successfully fetched {logs.Count()} activity logs");
                 return View(logs);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error fetching activity logs: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
-                TempData["Error"] = $"Failed to load activity logs: {ex.Message}";
+                _logger.LogError(ex, "❌ Error fetching activity logs");
+                ModelState.AddModelError(string.Empty, "An error occurred while fetching activity logs.");
                 return View(new List<ActivityLogItem>());
             }
+        }
+
+        // 2. GET: DETAILS PAGE
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            try
+            {
+                var client = await CreateAuthorizedClientAsync();
+                if (client == null) return HandleUnauthorized();
+
+                _logger.LogInformation("📡 Fetching activity log ID {Id} for details", id);
+
+                var response = await client.GetAsync($"api/actlogs/admin/{id}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        return HandleUnauthorized();
+
+                    _logger.LogWarning("❌ API returned {StatusCode} when fetching log {Id}", response.StatusCode, id);
+                    TempData["Error"] = $"Activity log not found (ID: {id})";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                var log = await response.Content.ReadFromJsonAsync<ActivityLogItem>();
+                if (log == null) return NotFound();
+
+                return View(log);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error fetching activity log ID: {Id}", id);
+                TempData["Error"] = "Unable to connect to API. Please check the connection.";
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
+        // 3. POST: DELETE ACTIVITY LOG
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var client = await CreateAuthorizedClientAsync();
+                if (client == null) return HandleUnauthorized();
+
+                _logger.LogInformation("📡 Deleting activity log ID: {Id}", id);
+
+                var response = await client.DeleteAsync($"api/actlogs/admin/{id}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        return HandleUnauthorized();
+
+                    _logger.LogWarning("❌ API delete failed: {StatusCode} for log ID: {Id}", response.StatusCode, id);
+                    TempData["Error"] = "Unable to delete activity log.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                TempData["Success"] = "Activity log deleted successfully!";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Error deleting activity log ID: {Id}", id);
+                TempData["Error"] = "Connection to API failed during delete.";
+            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

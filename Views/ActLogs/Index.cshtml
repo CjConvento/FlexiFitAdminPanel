@@ -71,7 +71,7 @@
                                     @log.activity_type
                                 </span>
                             </td>
-                            <td>@log.activity_date.ToString("MMM dd, yyyy")</td>
+                            <td>@log.activity_date?.ToString("MMM dd, yyyy")</td>
                             <td>@log.details</td>
                         </tr>
                     }

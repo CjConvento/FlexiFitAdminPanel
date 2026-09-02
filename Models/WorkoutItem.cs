@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using FlexiFit_AdminPanel.Helpers;
 
 namespace FlexiFit_AdminPanel.Models
 {
@@ -33,7 +34,7 @@ namespace FlexiFit_AdminPanel.Models
         {
             get
             {
-                var apiBaseUrl = "http://localhost:5160";
+                var apiBaseUrl = ApiUrlHelper.BaseUrl;
 
                 // Fallback kapag walang filename sa database
                 if (string.IsNullOrEmpty(img_filename))

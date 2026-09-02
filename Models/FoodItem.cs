@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;  
+using FlexiFit_AdminPanel.Helpers;
 
 namespace FlexiFit_AdminPanel.Models
 {
@@ -9,8 +11,14 @@ namespace FlexiFit_AdminPanel.Models
         public string food_name { get; set; } = string.Empty;
         public string category { get; set; } = string.Empty;
         public decimal calories { get; set; }
+
+        [JsonPropertyName("protein_g")]
         public decimal protein { get; set; }
+
+        [JsonPropertyName("carbs_g")]
         public decimal carbs { get; set; }
+
+        [JsonPropertyName("fats_g")]
         public decimal fats { get; set; }
 
         // Mahalaga para sa image mapping sa API
@@ -19,6 +27,8 @@ namespace FlexiFit_AdminPanel.Models
         // --- DAGDAG PARA SA DRAFT MODE & AUDIT ---
 
         // Gagamitin ito ng JS para sa Active/Inactive filtering
+        
+        [JsonPropertyName("fats_g")]
         public int is_active { get; set; }
 
         public DateTime created_at { get; set; }
@@ -30,7 +40,7 @@ namespace FlexiFit_AdminPanel.Models
         {
             get
             {
-                var apiBaseUrl = "http://localhost:5160";
+                var apiBaseUrl = ApiUrlHelper.BaseUrl;
 
                 // 1. Kung walang filename sa DB, ituro agad sa API default image
                 if (string.IsNullOrWhiteSpace(img_filename))
