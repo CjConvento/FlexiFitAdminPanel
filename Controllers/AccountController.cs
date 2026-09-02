@@ -41,6 +41,13 @@ namespace FlexiFit_AdminPanel.Controllers
         {
             _logger.LogInformation($"🔍 Login attempt for username: {model.Username ?? "null"}");
 
+            // 🔥 Firebase Token Login (PRIMARY)
+            if (!string.IsNullOrEmpty(model.FirebaseToken))
+            {
+                _logger.LogInformation("🔥 Firebase token detected, attempting Firebase login");
+                return await LoginWithFirebase(model.FirebaseToken);
+            }
+
             // Local Login (Username/Password) — pero iba na ang implementation
             if (!string.IsNullOrEmpty(model.Username) && !string.IsNullOrEmpty(model.Password))
             {
@@ -51,6 +58,60 @@ namespace FlexiFit_AdminPanel.Controllers
             _logger.LogWarning("❌ No login credentials provided");
             ModelState.AddModelError(string.Empty, "Please provide valid credentials");
             return View(model);
+        }
+
+        // =============================================
+        // ✅ RESTORED: LoginWithFirebase() - API-based
+        // =============================================
+        private async Task<IActionResult> LoginWithFirebase(string firebaseToken)
+        {
+            try
+            {
+                _logger.LogInformation("🔥 Forwarding Firebase token to API...");
+
+                var httpClient = _httpClientFactory.CreateClient();
+                httpClient.BaseAddress = new Uri(_apiBaseUrl);
+
+                // ✅ Call API's /api/auth/login (NOT direct DB)
+                var response = await httpClient.PostAsJsonAsync("api/auth/login", new
+                {
+                    FirebaseIdToken = firebaseToken
+                });
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"❌ API login failed: {response.StatusCode} - {errorContent}");
+                    ModelState.AddModelError(string.Empty, "Authentication failed.");
+                    return View("Login");
+                }
+
+                var auth = await response.Content.ReadFromJsonAsync<AuthResponse>();
+
+                if (auth == null || string.IsNullOrEmpty(auth.Token))
+                {
+                    _logger.LogWarning("❌ Auth response missing token.");
+                    ModelState.AddModelError(string.Empty, "Authentication failed.");
+                    return View("Login");
+                }
+
+                // ✅ Check kung ADMIN ang role
+                if (auth.Role?.ToUpper() != "ADMIN")
+                {
+                    _logger.LogWarning($"❌ Non-admin attempted Firebase login: {auth.Role}");
+                    ModelState.AddModelError(string.Empty, "Access denied. Admin privileges required.");
+                    return View("Login");
+                }
+
+                // ✅ Reuse CreateAdminSession() — stores JWT in Session
+                return await CreateAdminSession(auth);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Firebase login error");
+                ModelState.AddModelError(string.Empty, "An error occurred during login.");
+                return View("Login");
+            }
         }
 
         private async Task<IActionResult> LoginWithPassword(string username, string password)
