@@ -1,8 +1,8 @@
 ﻿@model IEnumerable<FlexiFit_AdminPanel.Models.ActivityLogItem>
 @{
     ViewData["Title"] = "Activity Logs";
-    var currentPage = (int)ViewBag.CurrentPage;
-    var totalPages = (int)ViewBag.TotalPages;
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
     var search = ViewBag.Search as string;
     var fromDate = ViewBag.FromDate as string;
     var toDate = ViewBag.ToDate as string;
