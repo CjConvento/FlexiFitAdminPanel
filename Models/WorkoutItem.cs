@@ -38,7 +38,7 @@ namespace FlexiFit_AdminPanel.Models
         public int? calories_burned { get; set; }
 
         [JsonPropertyName("isActive")]
-        public int is_active { get; set; }
+        public bool is_active { get; set; }
 
         [JsonPropertyName("createdAt")]
         public DateTime created_at { get; set; }
