@@ -25,6 +25,7 @@
         <p>Enter your credentials to access the panel</p>
     </div>
 
+    <!-- Error Message -->
     @if (!ViewData.ModelState.IsValid)
     {
         <div class="error-msg text-center">
@@ -33,7 +34,34 @@
         </div>
     }
 
-    <form asp-controller="Account" asp-action="Login" method="post">
+    <!-- ============================================ -->
+    <!-- 🔥 GOOGLE LOGIN BUTTON -->
+    <!-- ============================================ -->
+    <form id="loginForm" asp-controller="Account" asp-action="Login" method="post">
+        <input type="hidden" id="firebaseTokenInput" name="FirebaseToken" />
+
+        <!-- Google Button (triggers Firebase login) -->
+        <button type="button" id="firebaseLoginBtn" class="btn-login btn-google w-100">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
+                 width="20" alt="Google" style="margin-right: 10px;" />
+            Sign in with Google (Admin)
+        </button>
+    </form>
+
+    <!-- ============================================ -->
+    <!-- DIVIDER -->
+    <!-- ============================================ -->
+    <div class="divider">
+        <span>OR</span>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- MANUAL LOGIN FORM -->
+    <!-- ============================================ -->
+    <form asp-controller="Account" asp-action="Login" method="post" class="manual-form">
+        <!-- Hidden input para sa Firebase token (kung sakaling mag-fail ang JS) -->
+        <input type="hidden" id="firebaseTokenInput2" name="FirebaseToken" />
+
         <div class="mb-3">
             <label asp-for="Username" class="form-label">Username</label>
             <input asp-for="Username" class="form-control" placeholder="admin" />
@@ -42,11 +70,23 @@
             <label asp-for="Password" class="form-label">Password</label>
             <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" />
         </div>
+
         <button type="submit" class="btn-login btn-primary w-100">
             Sign In <i class="fas fa-arrow-right ms-2"></i>
         </button>
     </form>
 </div>
+
+<!-- ============================================ -->
+<!-- FIREBASE SCRIPTS -->
+<!-- ============================================ -->
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
+<!-- Firebase Config & Auth Logic -->
+<script src="~/js/firebase-config.js"></script>
+<script src="~/js/firebase-auth.js"></script>
 
 </body>
 </html>
