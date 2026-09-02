@@ -62,9 +62,12 @@ namespace FlexiFit_AdminPanel.Controllers
 
                 var response = await client.GetAsync("api/workout/admin/all");
 
-                // ✅ IDAGDAG ITO — i-log ang raw JSON response
+                        // ✅ I-save ang RAW JSON response sa file (hindi sa logs)
                 var responseContent = await response.Content.ReadAsStringAsync();
-                _logger.LogInformation($"📦 API Response: {responseContent}");
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "workouts-response.json");
+
+                System.IO.File.WriteAllText(filePath, responseContent);
+                _logger.LogInformation($"📦 API Response saved to: {filePath}");
 
                 if (!response.IsSuccessStatusCode)
                 {
