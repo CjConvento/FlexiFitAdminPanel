@@ -33,13 +33,7 @@
         </div>
     }
 
-    <!-- ============================================ -->
-    <!-- LOGIN FORM (with Firebase Token hidden input) -->
-    <!-- ============================================ -->
-    <form id="loginform" asp-controller="Account" asp-action="Login" method="post">
-        <!-- Hidden input for Firebase token -->
-        <input type="hidden" id="firebaseTokenInput" name="FirebaseToken" />
-
+    <form asp-controller="Account" asp-action="Login" method="post">
         <div class="mb-3">
             <label asp-for="Username" class="form-label">Username</label>
             <input asp-for="Username" class="form-control" placeholder="admin" />
@@ -52,32 +46,7 @@
             Sign In <i class="fas fa-arrow-right ms-2"></i>
         </button>
     </form>
-
-    <!-- ============================================ -->
-    <!-- DIVIDER -->
-    <!-- ============================================ -->
-    <div class="divider">
-        <span>OR</span>
-    </div>
-
-    <!-- ============================================ -->
-    <!-- GOOGLE SIGN-IN BUTTON -->
-    <!-- ============================================ -->
-    <button type="button" id="firebaseLoginBtn" class="btn-google w-100">
-        <i class="fab fa-google me-2"></i> Sign in with Google
-    </button>
 </div>
-
-<!-- ============================================ -->
-<!-- FIREBASE SCRIPTS -->
-<!-- ============================================ -->
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-
-<!-- Firebase Config & Auth Logic -->
-<script src="~/js/firebase-config.js"></script>
-<script src="~/js/firebase-auth.js"></script>
 
 </body>
 </html>
