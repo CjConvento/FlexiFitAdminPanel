@@ -112,6 +112,8 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole(); // Ito ang magpapadala ng logs sa Log Stream
 builder.Logging.AddDebug();   // Para sa local debugging
 
+builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
+
 ApiUrlHelper.Configure(builder.Configuration);
 
 var app = builder.Build();
