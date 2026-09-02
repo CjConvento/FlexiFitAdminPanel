@@ -68,7 +68,7 @@
                             }
                             <span style="color: @levelColor; font-size: 12px; font-weight: 600;">@workout.difficulty_level</span>
                         </td>
-                        <td style="font-size: 12px;">@workout.equipment?.Replace("_", " ") ?? "N/A"</td>
+                        <td style="font-size: 12px;">@(workout.equipment?.Replace("_", " ") ?? "N/A")</td>
                         <td><small>@workout.environment</small></td>
                         <td>@workout.duration<small style="color: #94a3b8">m</small></td>
                         <td>@workout.calories_burned<small style="color: #94a3b8">kcal</small></td>
