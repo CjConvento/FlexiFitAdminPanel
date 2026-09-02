@@ -68,6 +68,16 @@ builder.Services.AddLogging();
 
 builder.Services.AddHttpContextAccessor();
 
+// ========== SESSION SERVICES ==========
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(8);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+
 // ========== HTTP CLIENT FOR BLAZOR ==========
 builder.Services.AddScoped(sp =>
 {
@@ -121,6 +131,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 // 2. SIGURADUHING NASA GITNA ITO NG ROUTING AT ENDPOINTS
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
