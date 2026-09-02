@@ -6,32 +6,37 @@ namespace FlexiFit_AdminPanel.Models
 {
     public class FoodItem
     {
-        [Key]
+        [JsonPropertyName("foodId")]
         public int food_id { get; set; }
+
+        [JsonPropertyName("foodName")]
         public string food_name { get; set; } = string.Empty;
+
+        [JsonPropertyName("category")]
         public string category { get; set; } = string.Empty;
+
+        [JsonPropertyName("calories")]
         public decimal calories { get; set; }
 
-        [JsonPropertyName("protein_g")]
+        [JsonPropertyName("proteinG")]
         public decimal protein { get; set; }
 
-        [JsonPropertyName("carbs_g")]
+        [JsonPropertyName("carbsG")]
         public decimal carbs { get; set; }
 
-        [JsonPropertyName("fats_g")]
+        [JsonPropertyName("fatsG")]
         public decimal fats { get; set; }
 
-        // Mahalaga para sa image mapping sa API
+        [JsonPropertyName("imgFilename")]
         public string? img_filename { get; set; }
 
-        // --- DAGDAG PARA SA DRAFT MODE & AUDIT ---
-
-        // Gagamitin ito ng JS para sa Active/Inactive filtering
-        
-        [JsonPropertyName("fats_g")]
+        [JsonPropertyName("isActive")]
         public int is_active { get; set; }
 
+        [JsonPropertyName("createdAt")]
         public DateTime created_at { get; set; }
+
+        [JsonPropertyName("updatedAt")]
         public DateTime updated_at { get; set; }
 
 

@@ -1,28 +1,58 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using FlexiFit_AdminPanel.Helpers;
+using System.Text.Json.Serialization;
 
 namespace FlexiFit_AdminPanel.Models
 {
     public class WorkoutItem
     {
-        [Key]
+        [JsonPropertyName("workoutId")]
         public int workout_id { get; set; }
-        public string workout_name { get; set; } = string.Empty;
-        public string muscle_group { get; set; } = string.Empty;
-        public string equipment { get; set; } = string.Empty;
-        public string environment { get; set; } = string.Empty;
-        public string category { get; set; } = string.Empty; // Halimbawa: MUSCLE_GAIN, WARMUP, REHAB
-        public string difficulty_level { get; set; } = string.Empty;
-        public int is_weighted { get; set; }
-        public string? notes { get; set; }
-        public int calories_burned { get; set; }
-        public int is_active { get; set; }
-        public DateTime created_at { get; set; }    
-        public DateTime updated_at { get; set; }
-        public string? img_filename { get; set; }
-        public int duration { get; set; }
 
+        [JsonPropertyName("workoutName")]
+        public string workout_name { get; set; } = string.Empty;
+
+        [JsonPropertyName("muscleGroup")]
+        public string? muscle_group { get; set; }
+
+        [JsonPropertyName("equipment")]
+        public string? equipment { get; set; }
+
+        [JsonPropertyName("environment")]
+        public string? environment { get; set; }
+
+        [JsonPropertyName("category")]
+        public string? category { get; set; }
+
+        [JsonPropertyName("difficultyLevel")]
+        public string? difficulty_level { get; set; }
+
+        [JsonPropertyName("isWeighted")]
+        public bool is_weighted { get; set; }
+
+        [JsonPropertyName("notes")]
+        public string? notes { get; set; }
+
+        [JsonPropertyName("caloriesBurned")]
+        public int? calories_burned { get; set; }
+
+        [JsonPropertyName("isActive")]
+        public int is_active { get; set; }
+
+        [JsonPropertyName("createdAt")]
+        public DateTime created_at { get; set; }
+
+        [JsonPropertyName("updatedAt")]
+        public DateTime updated_at { get; set; }
+
+        [JsonPropertyName("imgFilename")]
+        public string? img_filename { get; set; }
+
+        [JsonPropertyName("duration")]
+        public int? duration { get; set; }
+
+        [JsonPropertyName("videoUrl")]
         public string? video_url { get; set; }
 
         // --- DITO ANG REVISON PARA SA IMAGES ---
