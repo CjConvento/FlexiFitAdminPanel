@@ -12,8 +12,7 @@
   <!-- =============================================== -->
   <ItemGroup>
     <Content Remove="Credentials\**\*" />
-    <None Include="Credentials\**\*" 
-          Condition="Exists('Credentials\firebase-service-account.json')">
+    <None Include="Credentials\**\*" Condition="Exists('Credentials\firebase-service-account.json')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
@@ -34,6 +33,7 @@
     <PackageReference Include="FirebaseAdmin" Version="3.6.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.76.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="8.0.12" />
   </ItemGroup>
 
   <ItemGroup>
