@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Data.SqlClient;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using Microsoft.Extensions.Logging.AzureAppServices;
+
 using FlexiFit_AdminPanel.Helpers; 
 
 Console.WriteLine($"🚀 DEPLOYED VERSION: 2.1 at {DateTime.UtcNow:HH:mm:ss}");
@@ -112,6 +114,8 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole(); // Ito ang magpapadala ng logs sa Log Stream
 builder.Logging.AddDebug();   // Para sa local debugging
 
+builder.Logging.AddAzureWebAppDiagnostics(); 
+
 builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
 
 ApiUrlHelper.Configure(builder.Configuration);
@@ -124,10 +128,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("RequestLogging");
+
 // ========== REQUEST LOGGING (FOR DEBUGGING) ==========
 app.Use(async (context, next) =>
 {
-    Console.WriteLine($"📨 {context.Request.Method} {context.Request.Path}");
+    // ✅ Gagamit na ng logger.LogInformation para mahuli ng Azure
+    logger.LogInformation("📨 {Method} {Path}", context.Request.Method, context.Request.Path);
     await next();
 });
 
