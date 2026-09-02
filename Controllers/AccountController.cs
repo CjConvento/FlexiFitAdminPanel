@@ -95,7 +95,6 @@ namespace FlexiFit_AdminPanel.Controllers
                     return View("Login");
                 }
 
-                // ✅ Check kung ADMIN ang role
                 if (auth.Role?.ToUpper() != "ADMIN")
                 {
                     _logger.LogWarning($"❌ Non-admin attempted Firebase login: {auth.Role}");
