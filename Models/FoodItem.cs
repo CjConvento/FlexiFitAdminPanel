@@ -31,7 +31,7 @@ namespace FlexiFit_AdminPanel.Models
         public string? img_filename { get; set; }
 
         [JsonPropertyName("isActive")]
-        public int is_active { get; set; }
+        public bool is_active { get; set; }
 
         [JsonPropertyName("createdAt")]
         public DateTime created_at { get; set; }
