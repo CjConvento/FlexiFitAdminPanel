@@ -62,6 +62,10 @@ namespace FlexiFit_AdminPanel.Controllers
 
                 var response = await client.GetAsync("api/workout/admin/all");
 
+                // ✅ IDAGDAG ITO — i-log ang raw JSON response
+                var responseContent = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation($"📦 API Response: {responseContent}");
+
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
