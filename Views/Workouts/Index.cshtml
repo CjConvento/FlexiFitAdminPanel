@@ -68,14 +68,14 @@
                             }
                             <span style="color: @levelColor; font-size: 12px; font-weight: 600;">@workout.difficulty_level</span>
                         </td>
-                        <td style="font-size: 12px;">@workout.equipment.Replace("_", " ")</td>
+                        <td style="font-size: 12px;">@workout.equipment?.Replace("_", " ") ?? "N/A"</td>
                         <td><small>@workout.environment</small></td>
                         <td>@workout.duration<small style="color: #94a3b8">m</small></td>
                         <td>@workout.calories_burned<small style="color: #94a3b8">kcal</small></td>
 
                         @* --- BAGONG STATUS BADGE --- *@
                         <td>
-                            @if (workout.is_active == 1)
+                            @if (workout.is_active)
                             {
                                 <span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700;">ACTIVE</span>
                             }
