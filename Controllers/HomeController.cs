@@ -47,8 +47,8 @@ public class HomeController : Controller
     public IActionResult DeveloperTools()
     {
         var session = _httpContextAccessor.HttpContext?.Session;
-        string? accessToken = HttpContext.Session.GetString("JwtToken");
-        
+        string? accessToken = session?.GetString("JwtToken");
+
         ViewBag.DeveloperJwtToken = accessToken ?? "Walang nahanap na token sa server session.";
         return View();
     }

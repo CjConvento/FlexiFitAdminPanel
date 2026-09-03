@@ -52,7 +52,7 @@
                 <!-- 🔥 CHANGED: Idinagdag ang link para sa Secure Developer Tools Page -->
                 <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "DeveloperTools" ? "active" : "")"
                     asp-controller="Home" asp-action="DeveloperTools">
-                    <i class="fas fa-user-shield"></i> <span>🔒 Dev Tools</span>
+                    <i class="fas fa-user-shield"></i> <span>Dev Tools</span>
                 </a>
 
                 <a class="nav-link text-danger" asp-controller="Account" asp-action="Logout">
