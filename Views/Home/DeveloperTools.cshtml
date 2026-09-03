@@ -96,20 +96,26 @@
                     }
                 }, 1000);
 
-                // 🔥 AUTOMATED CLIPBOARD WIPEOUT
+                // 🔥 IMPLEMENTASYON: Ang ligtas na clipboard layout cleanup tracker
                 clearClipboardTimeout = setTimeout(async () => {
                     try {
+                        // 1. O-overwritan natin ng walang lamang string ang clipboard para mabura ang JWT bearer token
                         await navigator.clipboard.writeText(""); 
-                        tokenField.value = "";
+                        
+                        // 2. ✅ FIXED: Ibalik lang natin sa password mask ang input box para protektado sa shoulder surfing,
+                        // PERO HUWAG mong buburahin ang value nito para magamit mo pa rin sa susunod na click!
                         tokenField.type = "password";
                         
+                        // 3. I-toggle ang alert message para malaman mong tapos na ang countdown
                         statusLabel.className = "align-self-center text-danger fw-bold";
-                        statusLabel.innerText = "🧼 Safe! Clipboard and screen cleared successfully.";
+                        statusLabel.innerText = "🧼 Safe! Clipboard memory cleared successfully.";
                     } catch (err) {
+                        // Lalabas LAMANG ito ngayon kung talagang lumipat ka ng browser tab o profile focus
                         statusLabel.className = "align-self-center text-warning fw-bold";
                         statusLabel.innerText = "⚠️ Error: Hindi nabura ang clipboard dahil umalis ka sa tab!";
                     }
                 }, 5000);
+
 
             } catch (error) {
                 console.error("Error during clipboard copy:", error);
