@@ -39,7 +39,7 @@ public class HomeController : Controller
     // =======================================================
     // Layer 1 Security: Server-side check para sa naka-login na Admin user lamang.
     // Kapag may hindi autorisadong sumubok pumasok, automatic silang ihaharang ng .NET at ibabalik sa login page.
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "ADMIN")]
     [HttpGet]
     public IActionResult DeveloperTools()
     {
