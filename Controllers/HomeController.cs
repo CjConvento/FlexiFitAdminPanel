@@ -2,14 +2,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Dapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 public class HomeController : Controller
 {
     private readonly string _connectionString;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public HomeController(IConfiguration configuration)
+    public HomeController(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
     {
-        _connectionString = configuration.GetConnectionString("FlexifitDb")!;
+        _connectionString = configuration.GetConnectionString("FlexifitDb") ?? "";
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<IActionResult> Index()
@@ -43,7 +46,9 @@ public class HomeController : Controller
     [HttpGet]
     public IActionResult DeveloperTools()
     {
+        var session = _httpContextAccessor.HttpContext?.Session;
         string? accessToken = HttpContext.Session.GetString("JwtToken");
+        
         ViewBag.DeveloperJwtToken = accessToken ?? "Walang nahanap na token sa server session.";
         return View();
     }
