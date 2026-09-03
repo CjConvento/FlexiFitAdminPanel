@@ -43,7 +43,8 @@ public class HomeController : Controller
     [HttpGet]
     public IActionResult DeveloperTools()
     {
-        // Awtomatikong hahanapin ng .NET framework ang file sa: Views/Home/DeveloperTools.cshtml
+        string? accessToken = HttpContext.Session.GetString("JwtToken");
+        ViewBag.DeveloperJwtToken = accessToken ?? "Walang nahanap na token sa server session.";
         return View();
     }
 }
