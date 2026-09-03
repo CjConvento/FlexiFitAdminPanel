@@ -8,8 +8,8 @@ namespace FlexiFit_AdminPanel.Helpers
 
         public static void Configure(IConfiguration configuration)
         {
-            _baseUrl = configuration["ApiSettings:BaseUrl"]
-                ?? throw new InvalidOperationException("API Base URL not configured in ApiSettings:BaseUrl.");
+            _baseUrl = configuration["ApiUrl:BaseUrl"]
+                ?? throw new InvalidOperationException("API Base URL not configured in ApiUrl:BaseUrl.");
         }
 
         public static string BaseUrl
