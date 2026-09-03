@@ -39,50 +39,5 @@ namespace FlexiFit_AdminPanel.Models
         [JsonPropertyName("updatedAt")]
         public DateTime updated_at { get; set; }
 
-
-        // --- DITO ILALAGAY ANG DYNAMIC URL LOGIC ---
-        public string FullImageUrl
-        {
-            get
-            {
-                var apiBaseUrl = ApiUrlHelper.BaseUrl;
-
-                // temporary: Real food photos were removed from storage to save space.
-                // Always return the placeholder until images are repopulated.
-                // (Original category/meal-type path-building logic commented below for later re-enable.)       
-                
-                return $"{apiBaseUrl}/images/foods/default.png";
-
-                /*
-                if (string.IsNullOrWhiteSpace(img_filename))
-                {
-                    return $"{apiBaseUrl}/images/foods/default.png";
-                }
-
-                string fn = img_filename.ToLower();
-                string categoryFolder = "vegan";
-                string typeFolder = "lunch";
-
-                // 2. Mapping para sa Main Category Folders
-                if (fn.Contains("keto")) categoryFolder = "keto";
-                else if (fn.Contains("vegan")) categoryFolder = "vegan";
-                else if (fn.Contains("vegetarian")) categoryFolder = "vegetarian";
-                else if (fn.Contains("lactose_free") || fn.Contains("lactose-free")) categoryFolder = "lactose_free";
-                else if (fn.Contains("high_protein") || fn.Contains("high-protein")) categoryFolder = "high_protein";
-                else if (fn.Contains("balanced")) categoryFolder = "balanced";
-                else categoryFolder = "vegan"; // Default category
-
-                // 3. Mapping para sa Subfolders (Meal Type)
-                if (fn.Contains("breakfast")) typeFolder = "breakfast";
-                else if (fn.Contains("lunch")) typeFolder = "lunch";
-                else if (fn.Contains("dinner")) typeFolder = "dinner";
-                else if (fn.Contains("snack")) typeFolder = "snacks";
-                else typeFolder = "lunch"; // Default type
-
-                // 4. Pagbuo ng Final URL
-                return $"{apiBaseUrl}/images/foods/{categoryFolder}/{typeFolder}/{img_filename}";
-                */
-            }
-        }
     }
 }

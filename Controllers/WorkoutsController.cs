@@ -3,6 +3,8 @@ using Microsoft.Data.SqlClient;
 using FlexiFit_AdminPanel.Models;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Configuration;  // Add this
+using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 
 namespace FlexiFit_AdminPanel.Controllers
 {
@@ -19,7 +21,7 @@ namespace FlexiFit_AdminPanel.Controllers
             ILogger<WorkoutsController> logger) 
         {
             _httpClientFactory = httpClientFactory;
-            _apiBaseUrl = configuration["ApiSettings:BaseUrl"]
+            _apiBaseUrl = configuration["ApiUrl:BaseUrl"]
                 ?? throw new InvalidOperationException("API Base URL not configured.");
             _logger = logger;
         }
@@ -48,6 +50,32 @@ namespace FlexiFit_AdminPanel.Controllers
         {
             _logger.LogWarning("⛔ Unauthorized access detected. Redirecting to Login.");
             return RedirectToAction("Login", "Account");
+        }
+
+        // 🔧 Helper method para mag-upload sa Blob
+        private async Task<string> UploadImageToBlob(IFormFile file, string container)
+        {
+            var token = HttpContext.Session.GetString("JwtToken");
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            
+            using var formData = new MultipartFormDataContent();
+            using var streamContent = new StreamContent(file.OpenReadStream());
+            formData.Add(streamContent, "file", file.FileName);
+
+            var response = await client.PostAsync($"{_apiBaseUrl}/api/blob/upload?container={container}", formData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<BlobUploadResult>(json);
+                return result?.fileName ?? throw new Exception("Upload succeeded but no fileName returned.");
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Upload failed: {error}");
+            }
         }
 
         // 1. INDEX: Ipakita ang lahat ng workouts
@@ -92,12 +120,20 @@ namespace FlexiFit_AdminPanel.Controllers
         // 3. POST: PROCESS CREATE
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(WorkoutItem workout)
+        public async Task<IActionResult> Create(WorkoutItem workout, IFormFile imageFile)
         {
             try
             {
                 var client = await CreateAuthorizedClientAsync();
                 if (client == null) return HandleUnauthorized();
+
+                // ✅ KUNG MAY IMAGE NA IN-UPLOAD
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var container = "workouts";
+                    var fileName = await UploadImageToBlob(imageFile, container);
+                    workout.img_filename = fileName;
+                }
 
                 _logger.LogInformation("📡 Creating new workout: {Name}", workout.workout_name);
 
@@ -163,12 +199,23 @@ namespace FlexiFit_AdminPanel.Controllers
         // 5. POST: UPDATE WORKOUT
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(WorkoutItem workout)
+        public async Task<IActionResult> Edit(int id, WorkoutItem workout, IFormFile imageFile)
         {
+            if (id != workout.workout_id)
+                return NotFound();
+
             try
             {
                 var client = await CreateAuthorizedClientAsync();
                 if (client == null) return HandleUnauthorized();
+
+                // ✅ KUNG MAY BAGONG IMAGE NA IN-UPLOAD
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var container = "workouts";
+                    var fileName = await UploadImageToBlob(imageFile, container);
+                    workout.img_filename = fileName; // I-store ang file name (hindi full URL)
+                }
 
                 _logger.LogInformation("📡 Updating workout ID: {Id}", workout.workout_id);
 

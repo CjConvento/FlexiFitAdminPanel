@@ -10,7 +10,7 @@
     </div>
 
     <div class="card">
-        <form asp-action="Edit" method="post">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
             @* IMPORTANT: Kailangan ito para malaman ng SQL kung anong ID ang i-uupdate *@
             <input type="hidden" asp-for="workout_id" />
 
@@ -51,6 +51,32 @@
                     <label style="color: #94a3b8; font-size: 13px;">Calories Burned</label>
                     <input asp-for="calories_burned" type="number" class="search" style="width: 100%; margin-top: 8px;" />
                 </div>
+
+                @* ✅ NEW: Image Upload Section *@
+                <div class="form-group" style="grid-column: span 2;">
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Workout Image</label>
+                    
+                    @* Display current image *@
+                    @if (!string.IsNullOrEmpty(Model.img_filename))
+                    {
+                        <div style="margin-top: 8px; margin-bottom: 12px;">
+                            <img src="@ImageUrlHelper.GetFullImageUrl(Model.img_filename, "workouts")" 
+                                 style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #334155;" id="imagePreview" />  @* ✅ ADDED ID *@
+                            <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">Current image: @Model.img_filename</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="margin-top: 8px; margin-bottom: 12px;">
+                            <img src="@ImageUrlHelper.GetDefaultImage("workouts")" 
+                                 style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #334155;" id="imagePreview" />  @* ✅ ADDED ID *@
+                            <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">No image uploaded</p>
+                        </div>
+                    }
+                    
+                    <input type="file" name="imageFile" class="form-control" style="margin-top: 8px; background: #0f172a; color: #f8fafc; border: 1px solid #334155; padding: 8px; border-radius: 8px;" onchange="previewImage(this)" />  @* ✅ ADDED onchange *@
+                    <small style="color: #64748b;">Upload a new image to replace the current one (optional)</small>
+                </div>
             </div>
 
             <div style="margin-top: 30px; border-top: 1px solid #334155; padding-top: 25px; display: flex; gap: 10px;">
@@ -60,3 +86,8 @@
         </form>
     </div>
 </div>
+
+@* ✅ ADD THIS SECTION AT THE BOTTOM *@
+@section Scripts {
+    <script src="~/js/image-preview.js"></script>
+}

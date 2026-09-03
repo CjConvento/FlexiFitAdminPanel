@@ -54,45 +54,5 @@ namespace FlexiFit_AdminPanel.Models
 
         [JsonPropertyName("videoUrl")]
         public string? video_url { get; set; }
-
-        // --- DITO ANG REVISON PARA SA IMAGES ---
-
-        /// <summary>
-        /// Awtomatikong binubuo ang URL ng image galing sa API base sa category subfolders.
-        /// </summary>
-        public string FullImageUrl
-        {
-            get
-            {
-                var apiBaseUrl = ApiUrlHelper.BaseUrl;
-
-                // Fallback kapag walang filename sa database
-                if (string.IsNullOrEmpty(img_filename))
-                    return $"{apiBaseUrl}/images/workouts/default.png";
-
-                string folderPath = "images/workouts"; // Default folder
-                string cat = category?.ToUpper() ?? "";
-
-                // Tumpak na mapping base sa iyong file explorer
-                if (cat.Contains("MUSCLE_GAIN"))
-                {
-                    folderPath = "images/workouts/muscle_gain";
-                }
-                else if (cat.Contains("CARDIO") || cat.Contains("WARMUP"))
-                {
-                    folderPath = "images/workouts/cardio";
-                }
-                else if (cat.Contains("REHAB"))
-                {
-                    folderPath = "images/workouts/rehab";
-                }
-                else
-                {
-                    folderPath = "images/workouts/muscle_gain";
-                }
-
-                return $"{apiBaseUrl}/{folderPath}/{img_filename}";
-            }
-        }
     }
 }

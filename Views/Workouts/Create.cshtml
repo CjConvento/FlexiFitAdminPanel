@@ -13,7 +13,7 @@
     </div>
 
     <div class="card">
-        <form asp-action="Create" method="post">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
 
                 @* Basic Info *@
@@ -68,10 +68,21 @@
                     <input asp-for="calories_burned" type="number" class="search" style="width: 100%; margin-top: 8px;" />
                 </div>
 
-                @* Image Filename - Optional *@
+                @* ✅ NEW: Image Upload Section (replaces img_filename text input) *@
                 <div class="form-group" style="grid-column: span 2;">
-                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Image Filename (Optional)</label>
-                    <input asp-for="img_filename" class="search" style="width: 100%; margin-top: 8px;" placeholder="e.g. pushup.png" />
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Workout Image</label>
+                    
+                    <div style="margin-top: 8px; margin-bottom: 12px;">
+                        <img src="@ImageUrlHelper.GetDefaultImage("workouts")" 
+                             style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #334155;" 
+                             id="imagePreview" />
+                        <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">Default image (upload a new one to replace)</p>
+                    </div>
+                    
+                    <input type="file" name="imageFile" class="form-control" 
+                           style="margin-top: 8px; background: #0f172a; color: #f8fafc; border: 1px solid #334155; padding: 8px; border-radius: 8px;"
+                           accept="image/*" onchange="previewImage(this)" />
+                    <small style="color: #64748b;">Upload an image for this workout (optional)</small>
                 </div>
             </div>
 
@@ -83,3 +94,8 @@
         </form>
     </div>
 </div>
+
+@* ✅ ADD THIS SECTION AT THE BOTTOM *@
+@section Scripts {
+    <script src="~/js/image-preview.js"></script>
+}

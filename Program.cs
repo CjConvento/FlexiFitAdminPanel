@@ -118,7 +118,26 @@ builder.Logging.AddAzureWebAppDiagnostics();
 
 builder.Logging.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
 
+// ========== API URL HELPER ==========
 ApiUrlHelper.Configure(builder.Configuration);
+
+// ========== IMAGE URL HELPER (Azure Blob) ==========
+var apiBaseUrl = builder.Configuration["ApiUrl:BaseUrl"]; // API URL (for default images)
+var blobBaseUrl = builder.Configuration["AzureStorage:BaseUrl"]; // Azure URL (for actual images)
+
+// ✅ I-configure ang helper gamit ang dalawang URL
+if (!string.IsNullOrEmpty(apiBaseUrl) && !string.IsNullOrEmpty(blobBaseUrl))
+{
+    FlexiFit_AdminPanel.Helpers.ImageUrlHelper.Configure(apiBaseUrl, blobBaseUrl);
+}
+else
+{
+    // ⚠️ FALLBACK: Para sa local development
+    FlexiFit_AdminPanel.Helpers.ImageUrlHelper.Configure(
+        "https://flexifit-api-bqdrdcchf8faagat.japaneast-01.azurewebsites.net",  // Default API URL
+        "https://flexifitstorage.blob.core.windows.net" // Default Azure Blob URL
+    );
+}
 
 var app = builder.Build();
 
