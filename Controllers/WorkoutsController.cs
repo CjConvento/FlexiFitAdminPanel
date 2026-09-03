@@ -213,6 +213,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (imageFile != null && imageFile.Length > 0)
                 {
                     var container = "workouts";
+                    
                     var fileName = await UploadImageToBlob(imageFile, container);
                     workout.img_filename = fileName; // I-store ang file name (hindi full URL)
                 }
