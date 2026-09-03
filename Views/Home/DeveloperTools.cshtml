@@ -97,22 +97,32 @@
                 }, 1000);
 
                 // 🔥 IMPLEMENTASYON: Ang ligtas na clipboard layout cleanup tracker
-                clearClipboardTimeout = setTimeout(async () => {
+                clearClipboardTimeout = setTimeout(() => {
                     try {
-                        // 1. O-overwritan natin ng walang lamang string ang clipboard para mabura ang JWT bearer token
-                        await navigator.clipboard.writeText(""); 
+                        clearInterval(countdownInterval);
+
+                        // 🔍 Gagamit tayo ng invisible dummy temporary textarea element.
+                        // Ito ang subok na un-blocked traditional standard loophole para sa Firefox core engine timers!
+                        const dummyTextArea = document.createElement("textarea");
+                        dummyTextArea.value = ""; // Blank string wipeout
+                        dummyTextArea.style.position = "fixed"; // Iwas visual flickering sa screen
+                        dummyTextArea.style.opacity = "0";
+                        document.body.appendChild(dummyTextArea);
                         
-                        // 2. ✅ FIXED: Ibalik lang natin sa password mask ang input box para protektado sa shoulder surfing,
-                        // PERO HUWAG mong buburahin ang value nito para magamit mo pa rin sa susunod na click!
+                        // Piliting piliin at i-execute ang copy command sa blank textarea habang nakatago
+                        dummyTextArea.select();
+                        document.execCommand("copy"); // 💡 Fallback engine success mechanism para sa Floorp
+                        document.body.removeChild(dummyTextArea);
+
+                        // I-lock ulit ang main field mask
                         tokenField.type = "password";
                         
-                        // 3. I-toggle ang alert message para malaman mong tapos na ang countdown
                         statusLabel.className = "align-self-center text-danger fw-bold";
                         statusLabel.innerText = "🧼 Safe! Clipboard memory cleared successfully.";
                     } catch (err) {
-                        // Lalabas LAMANG ito ngayon kung talagang lumipat ka ng browser tab o profile focus
+                        console.error("Floorp restricted backup clearance:", err);
                         statusLabel.className = "align-self-center text-warning fw-bold";
-                        statusLabel.innerText = "⚠️ Error: Hindi nabura ang clipboard dahil umalis ka sa tab!";
+                        statusLabel.innerText = "⚠️ Notification: Clipboard action restricted by Floorp configuration settings.";
                     }
                 }, 5000);
 
