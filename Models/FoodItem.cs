@@ -47,7 +47,13 @@ namespace FlexiFit_AdminPanel.Models
             {
                 var apiBaseUrl = ApiUrlHelper.BaseUrl;
 
-                // 1. Kung walang filename sa DB, ituro agad sa API default image
+                // TEMPORARY: Real food photos were removed from storage to save space.
+                // Always return the placeholder until images are repopulated.
+                // (Original category/meal-type path-building logic commented below for later re-enable.)       
+                
+                return $"{apiBaseUrl}/images/foods/default.png";
+
+                /*
                 if (string.IsNullOrWhiteSpace(img_filename))
                 {
                     return $"{apiBaseUrl}/images/foods/default.png";
@@ -75,6 +81,7 @@ namespace FlexiFit_AdminPanel.Models
 
                 // 4. Pagbuo ng Final URL
                 return $"{apiBaseUrl}/images/foods/{categoryFolder}/{typeFolder}/{img_filename}";
+                */
             }
         }
     }

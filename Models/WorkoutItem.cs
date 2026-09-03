@@ -80,7 +80,7 @@ namespace FlexiFit_AdminPanel.Models
                 }
                 else if (cat.Contains("CARDIO") || cat.Contains("WARMUP"))
                 {
-                    folderPath = "images/workout/cardio";
+                    folderPath = "images/workouts/cardio";
                 }
                 else if (cat.Contains("REHAB"))
                 {

@@ -62,13 +62,6 @@ namespace FlexiFit_AdminPanel.Controllers
 
                 var response = await client.GetAsync("api/workout/admin/all");
 
-                        // ✅ I-save ang RAW JSON response sa file (hindi sa logs)
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "workouts-response.json");
-
-                System.IO.File.WriteAllText(filePath, responseContent);
-                _logger.LogInformation($"📦 API Response saved to: {filePath}");
-
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
