@@ -47,7 +47,7 @@ namespace FlexiFit_AdminPanel.Models
             {
                 var apiBaseUrl = ApiUrlHelper.BaseUrl;
 
-                // TEMPORARY: Real food photos were removed from storage to save space.
+                // temporary: Real food photos were removed from storage to save space.
                 // Always return the placeholder until images are repopulated.
                 // (Original category/meal-type path-building logic commented below for later re-enable.)       
                 

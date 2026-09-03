@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Dapper;
+using Microsoft.AspNetCore.Authorization;
 
 public class HomeController : Controller
 {
@@ -31,5 +32,18 @@ public class HomeController : Controller
 
             return View();
         }
+    }
+
+    // =======================================================
+    // 🔒 BAGONG ADDITION: SECURE DEVELOPER TOOLS ROUTE
+    // =======================================================
+    // Layer 1 Security: Server-side check para sa naka-login na Admin user lamang.
+    // Kapag may hindi autorisadong sumubok pumasok, automatic silang ihaharang ng .NET at ibabalik sa login page.
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public IActionResult DeveloperTools()
+    {
+        // Awtomatikong hahanapin ng .NET framework ang file sa: Views/Home/DeveloperTools.cshtml
+        return View();
     }
 }
