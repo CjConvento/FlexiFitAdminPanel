@@ -20,7 +20,7 @@ namespace FlexiFit_AdminPanel.Controllers
             ILogger<FoodsController> logger)
         {
             _httpClientFactory = httpClientFactory;
-            _apiBaseUrl = configuration["ApiSettings:BaseUrl"]
+            _apiBaseUrl = configuration["ApiUrl:BaseUrl"]
                 ?? throw new InvalidOperationException("API Base URL not configured.");
             _logger = logger;
         }

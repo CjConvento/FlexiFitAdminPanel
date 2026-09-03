@@ -24,7 +24,7 @@ namespace FlexiFit_AdminPanel.Controllers
             ILogger<AccountController> logger)  // ✅ Add ILogger parameter
         {
             _httpClientFactory = httpClientFactory;
-            _apiBaseUrl = configuration["ApiSettings:BaseUrl"]
+            _apiBaseUrl = configuration["ApiUrl:BaseUrl"]
                 ?? throw new InvalidOperationException("API Base URL not configured.");
             _logger = logger;  // ✅ Assign logger
         }
