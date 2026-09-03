@@ -3,11 +3,13 @@
 }
 
 <div class="container-fluid p-4">
+    @* Header *@
     <div class="mb-4">
         <h2 class="fw-bold m-0 text-white">Secure Developer Token Extractor</h2>
         <p class="text-secondary small">Staging Slot Sandbox Environment</p>
     </div>
 
+    @* Tools Body Card *@
     <div class="card bg-dark border-secondary text-white shadow-sm" style="background: rgba(30, 30, 40, 0.6) !important; backdrop-filter: blur(10px);">
         <div class="card-body p-4">
             <p class="text-secondary small">
@@ -15,10 +17,10 @@
                 <span class="text-danger fw-bold">⚠️ Paalala: Manatili sa tab na ito sa loob ng 5 segundo upang awtomatikong mabura ang iyong clipboard para sa seguridad!</span>
             </p>
             
-            @* ✅ ITINAMA: Direkta nating itinanim ang ViewBag value dito, at inalis ang disabled sa show eye toggle *@
+            @* Masked Input Field *@
             <div class="input-group mb-3">
-                <input type="password" id="secretTokenHolder" class="form-control text-truncate border-secondary bg-dark text-white" readonly value="@ViewBag.DeveloperJwtToken" style="font-family: monospace;">
-                <button class="btn btn-outline-secondary text-white border-secondary" type="button" id="togglePasswordBtn" onclick="toggleTokenVisibility()">
+                <input type="password" id="secretTokenHolder" class="form-control text-truncate border-secondary bg-dark text-white" readonly value="@ViewBag.DeveloperJwtToken" placeholder="••••••••••••••••••••••••••••••••" style="font-family: monospace;">
+                <button class="btn btn-outline-secondary" type="button" id="togglePasswordBtn" onclick="toggleTokenVisibility()" disabled>
                     👁️ Show
                 </button>
             </div>
