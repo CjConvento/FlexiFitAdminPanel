@@ -50,7 +50,7 @@
                         <td style="padding-left: 24px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 @* REVISED IMAGE TAG *@
-                                <img src="@workout.FullImageUrl"
+                                <img src="@ImageUrlHelper.GetFullImageUrl(workout.img_filename ?? "", "workouts")"
                                      style="width: 45px; height: 45px; border-radius: 8px; object-fit: cover; border: 1px solid #334155;"
                                      onerror="this.onerror=null; this.src='https://flexifit-api-bqdrdcchf8faagat.japaneast-01.azurewebsites.net/images/workouts/default.png';" />
                                 <span style="font-weight: 600;">@workout.workout_name</span>
