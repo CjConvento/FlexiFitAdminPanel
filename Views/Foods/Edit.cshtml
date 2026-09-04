@@ -3,12 +3,12 @@
 <div class="main-content">
     <div class="top-header">
         <h2 style="margin: 0;">✏️ Edit Food Item</h2>
-        <a asp-action="Index" class="btn" style="background: #64748b;">Cancel</a>
+        <a asp-action="Index" class="btn" style="background: #64748b;">Back to List</a>
     </div>
 
     <div class="content-area">
         <div class="card">
-            <form asp-action="Edit" method="post">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
                 <input type="hidden" asp-for="food_id" />
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -17,8 +17,11 @@
                         <input asp-for="food_name" class="search" style="width: 100%; margin-top: 8px;" required />
                     </div>
                     <div class="form-group">
-                        <label style="color: #94a3b8;">Category</label>
-                        <input asp-for="category" class="search" style="width: 100%; margin-top: 8px;" />
+                        <label style="color: #94a3b8; font-weight: 600;">Category</label>
+                        <select asp-for="category" class="search" style="width: 100%; margin-top: 8px; background: #0f172a;">
+                            <option value="Food">Food</option>
+                            <option value="Addon">Addon</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label style="color: #94a3b8;">Calories (kcal)</label>
@@ -36,12 +39,57 @@
                         <label style="color: #94a3b8;">Fats (g)</label>
                         <input asp-for="fats" type="number" step="0.01" class="search" style="width: 100%; margin-top: 8px;" />
                     </div>
+
+                    @* ✅ ADDED: Status field *@
+                    <div class="form-group">
+                        <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Status</label>
+                        <select asp-for="is_active" class="search" style="width: 100%; margin-top: 8px; background: #0f172a;">
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>                
+
+                @* ✅ ADDED: Image Upload Section *@
+                    <div class="form-group" style="grid-column: span 2; border-top: 1px solid #334155; padding-top: 20px; margin-top: 10px;">
+                        <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Food Image</label>
+                        
+                        @if (!string.IsNullOrEmpty(Model.img_filename))
+                        {
+                            <div style="margin-top: 8px; margin-bottom: 12px;">
+                                <img src="@ImageUrlHelper.GetFullImageUrl(Model.img_filename, "foods")" 
+                                     style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #334155; object-fit: cover;" 
+                                     id="imagePreview" />
+                                <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">Current image: @Model.img_filename</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="margin-top: 8px; margin-bottom: 12px;">
+                                <img src="@ImageUrlHelper.GetDefaultImage("foods")" 
+                                     style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 1px solid #334155; object-fit: cover;" 
+                                     id="imagePreview" />
+                                <p style="color: #94a3b8; font-size: 12px; margin-top: 4px;">No image uploaded (placeholder shown)</p>
+                            </div>
+                        }
+                        
+                        <input type="file" name="imageFile" class="form-control" 
+                               style="margin-top: 8px; background: #0f172a; color: #f8fafc; border: 1px solid #334155; padding: 8px; border-radius: 8px; width: 100%;"
+                               onchange="previewImage(this)" />
+                        <small style="color: #64748b;">Upload a new image to replace the current one (optional)</small>
+                    </div>
                 </div>
 
-                <div style="margin-top: 30px; border-top: 1px solid #334155; padding-top: 20px;">
+                <div style="margin-top: 30px; border-top: 1px solid #334155; padding-top: 25px; display: flex; gap: 10px;">
                     <button type="submit" class="btn">Update Food Item</button>
+                    <a asp-action="Index" class="btn" style="background: transparent; border: 1px solid #334155;">Cancel</a>
                 </div>
+            
             </form>
         </div>
     </div>
 </div>
+
+@* ✅ ADD THIS SECTION AT THE BOTTOM *@
+@section Scripts {
+    <script src="~/js/image-preview.js"></script>
+}

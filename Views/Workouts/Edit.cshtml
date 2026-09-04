@@ -21,10 +21,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label style="color: #94a3b8; font-size: 13px;">Status</label>
-                    <select asp-for="is_active" class="search" style="width: 100%; margin-top: 8px; background: #0f172a;">
-                        <option value="true">Active</option>
-                        <option value="false">Inactive</option>
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Category</label>
+                    <select asp-for="category" class="search" style="width: 100%; margin-top: 8px; background: #0f172a;">
+                        <option value="MUSCLE_GAIN">Muscle Gain</option>
+                        <option value="CARDIO">Cardio / Warmup</option>
+                        <option value="REHAB">Rehab</option>
+                        <option value="WARMUP">Warmup</option>
                     </select>
                 </div>
 
@@ -43,6 +45,26 @@
                 </div>
 
                 <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Equipment</label>
+                    <select asp-for="equipment" class="search" style="width: 100%; margin-top: 8px; background: #0f172a;">
+                        <option value="">Select Equipment</option>
+                        <option value="HOME EQUIPMENT">HOME EQUIPMENT</option>
+                        <option value="GYM EQUIPMENT">GYM EQUIPMENT</option>
+                        <option value="OUTDOOR EQUIPMENT">OUTDOOR EQUIPMENT</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px; font-weight: 600;">Environment</label>
+                    <select asp-for="environment" class="search" style="width: 100%; margin-top: 8px; background: #0f172a;">
+                        <option value="">Select Environment</option>
+                        <option value="HOME">HOME</option>
+                        <option value="GYM">GYM</option>
+                        <option value="OUTDOOR">OUTDOOR</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label style="color: #94a3b8; font-size: 13px;">Duration (mins)</label>
                     <input asp-for="duration" type="number" class="search" style="width: 100%; margin-top: 8px;" />
                 </div>
@@ -50,6 +72,14 @@
                 <div class="form-group">
                     <label style="color: #94a3b8; font-size: 13px;">Calories Burned</label>
                     <input asp-for="calories_burned" type="number" class="search" style="width: 100%; margin-top: 8px;" />
+                </div>
+
+                <div class="form-group">
+                    <label style="color: #94a3b8; font-size: 13px;">Status</label>
+                    <select asp-for="is_active" class="search" style="width: 100%; margin-top: 8px; background: #0f172a;">
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
                 </div>
 
                 @* ✅ NEW: Image Upload Section *@
