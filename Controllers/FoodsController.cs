@@ -4,6 +4,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FlexiFit_AdminPanel.Models;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 
 namespace FlexiFit_AdminPanel.Controllers
 {
@@ -43,10 +45,43 @@ namespace FlexiFit_AdminPanel.Controllers
             return client;
         }
 
-        private IActionResult HandleUnauthorized()
+        // ✅ HELPER: Handle expired token with message
+        private IActionResult HandleExpiredToken()
         {
-            _logger.LogWarning("⛔ Unauthorized access detected. Redirecting to Login.");
+            _logger.LogWarning("⛔ Token expired. Redirecting to Login.");
+            TempData["Error"] = "Your session has expired. Please login again.";
+            HttpContext.Session.Remove("JwtToken");
             return RedirectToAction("Login", "Account");
+        }
+
+        // 🔧 Helper method para mag-upload sa Blob
+        private async Task<string> UploadImageToBlob(IFormFile file, string container)
+        {
+            var token = HttpContext.Session.GetString("JwtToken");
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            
+            using var formData = new MultipartFormDataContent();
+            using var streamContent = new StreamContent(file.OpenReadStream());
+            formData.Add(streamContent, "file", file.FileName);
+
+            var response = await client.PostAsync($"{_apiBaseUrl}/api/blob/upload?container={container}", formData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<BlobUploadResult>(json);
+                return result?.fileName ?? throw new Exception("Upload succeeded but no fileName returned.");
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new Exception("Your session has expired. Please login again.");
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Upload failed: {error}");
+            }
         }
 
         // 1. INDEX: Ipakita ang lahat ng foods
@@ -55,7 +90,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation("📡 Fetching all foods from API...");
 
@@ -64,7 +99,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogError("❌ API error: {StatusCode}", response.StatusCode);
                     ModelState.AddModelError(string.Empty, "Unable to fetch foods.");
@@ -90,12 +125,20 @@ namespace FlexiFit_AdminPanel.Controllers
         // 3. POST: PROCESS CREATE
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(FoodItem food)
+        public async Task<IActionResult> Create(FoodItem food, IFormFile imageFile)
         {
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
+
+                // ✅ KUNG MAY IMAGE NA IN-UPLOAD
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var container = "foods";
+                    var fileName = await UploadImageToBlob(imageFile, container);
+                    food.img_filename = fileName;
+                }
 
                 _logger.LogInformation("📡 Creating new food: {Name}", food.food_name);
 
@@ -104,7 +147,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API create failed: {StatusCode}", response.StatusCode);
                     ModelState.AddModelError(string.Empty, "Failed to create food.");
@@ -129,7 +172,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation("📡 Fetching food ID {Id} for edit", id);
 
@@ -138,7 +181,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API returned {StatusCode} when fetching food {Id}", response.StatusCode, id);
                     TempData["Error"] = $"Food not found (ID: {id})";
@@ -161,12 +204,20 @@ namespace FlexiFit_AdminPanel.Controllers
         // 5. POST: UPDATE FOOD
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(FoodItem food)
+        public async Task<IActionResult> Edit(FoodItem food, IFormFile imageFile)
         {
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
+
+                // ✅ KUNG MAY BAGONG IMAGE NA IN-UPLOAD
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var container = "foods";
+                    var fileName = await UploadImageToBlob(imageFile, container);
+                    food.img_filename = fileName;
+                }
 
                 _logger.LogInformation("📡 Updating food ID: {Id}", food.food_id);
 
@@ -175,7 +226,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API update failed: {StatusCode} for food ID: {Id}", response.StatusCode, food.food_id);
                     ModelState.AddModelError(string.Empty, "Update failed.");
@@ -201,7 +252,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation("📡 Deleting food ID: {Id}", id);
 
@@ -210,7 +261,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API delete failed: {StatusCode} for food ID: {Id}", response.StatusCode, id);
                     TempData["Error"] = "Unable to delete food. It might be in use.";

@@ -32,6 +32,7 @@ namespace FlexiFit_AdminPanel.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            HttpContext.Session.Clear();
             _logger.LogInformation("📄 Login page loaded");
             return View();
         }

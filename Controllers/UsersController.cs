@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FlexiFit_AdminPanel.Models;
+using System.Reflection.Metadata;
 
 namespace FlexiFit_AdminPanel.Controllers
 {
@@ -44,10 +45,12 @@ namespace FlexiFit_AdminPanel.Controllers
             return client;
         }
 
-        // ✅ HELPER: I-handle ang 401 Unauthorized
-        private IActionResult HandleUnauthorized()
+        // ✅ BAGONG HELPER: Handle expired token with message
+        private IActionResult HandleExpiredToken()
         {
-            _logger.LogWarning("⛔ Unauthorized access detected. Redirecting to Login.");
+            _logger.LogWarning("⛔ Token expired. Redirecting to Login.");
+            TempData["Error"] = "Your session has expired. Please login again.";
+            HttpContext.Session.Remove("JwtToken"); // Clear expired token
             return RedirectToAction("Login", "Account");
         }
 
@@ -57,7 +60,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation("📡 Fetching users from API...");
 
@@ -66,7 +69,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     // ✅ Huwag i-log ang buong error body
                     _logger.LogError("❌ API error: {StatusCode}", response.StatusCode);
@@ -112,7 +115,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 if (string.IsNullOrEmpty(user.firebase_uid))
                 {
@@ -130,7 +133,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API create failed: {StatusCode}", response.StatusCode);
                     ModelState.AddModelError(string.Empty, "Failed to create user.");
@@ -155,7 +158,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation($"📡 Fetching user ID {id} for edit");
 
@@ -164,7 +167,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API returned {StatusCode} when fetching user {Id}", response.StatusCode, id);                    TempData["Error"] = $"User not found (ID: {id})";
                     return RedirectToAction(nameof(Index));
@@ -192,7 +195,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation("📡 Updating user ID: {UserId}", user.user_id);
 
@@ -201,7 +204,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API update failed: {StatusCode} for user ID: {UserId}", response.StatusCode, user.user_id);
                     ModelState.AddModelError(string.Empty, "Update failed.");
@@ -227,7 +230,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation("📡 Deleting user ID: {UserId}", id);
 
@@ -236,7 +239,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API delete failed: {StatusCode} for user ID: {UserId}", response.StatusCode, id);
                     TempData["Error"] = "Unable to delete user. It might be in use.";

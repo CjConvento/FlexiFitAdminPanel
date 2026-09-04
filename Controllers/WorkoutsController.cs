@@ -45,10 +45,11 @@ namespace FlexiFit_AdminPanel.Controllers
             return client;
         }
 
-        // ✅ HELPER: I-handle ang 401 Unauthorized
-        private IActionResult HandleUnauthorized()
+        private IActionResult HandleExpiredToken()
         {
-            _logger.LogWarning("⛔ Unauthorized access detected. Redirecting to Login.");
+            _logger.LogWarning("⛔ Token expired. Redirecting to Login.");
+            TempData["Error"] = "Your session has expired. Please login again.";
+            HttpContext.Session.Remove("JwtToken");
             return RedirectToAction("Login", "Account");
         }
 
@@ -71,6 +72,10 @@ namespace FlexiFit_AdminPanel.Controllers
                 var result = JsonSerializer.Deserialize<BlobUploadResult>(json);
                 return result?.fileName ?? throw new Exception("Upload succeeded but no fileName returned.");
             }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                throw new Exception("Your session has expired. Please login again.");
+            }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
@@ -84,7 +89,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation("📡 Fetching all workouts from API...");
 
@@ -93,7 +98,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogError("❌ API error: {StatusCode}", response.StatusCode);
                     ModelState.AddModelError(string.Empty, "Unable to fetch workouts.");
@@ -125,7 +130,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 // ✅ KUNG MAY IMAGE NA IN-UPLOAD
                 if (imageFile != null && imageFile.Length > 0)
@@ -142,7 +147,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API create failed: {StatusCode}", response.StatusCode);
                     ModelState.AddModelError(string.Empty, "Failed to create workout.");
@@ -167,7 +172,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation("📡 Fetching workout ID {Id} for edit", id);
 
@@ -176,7 +181,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API returned {StatusCode} when fetching workout {Id}", response.StatusCode, id);
                     TempData["Error"] = $"Workout not found (ID: {id})";
@@ -207,7 +212,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 // ✅ KUNG MAY BAGONG IMAGE NA IN-UPLOAD
                 if (imageFile != null && imageFile.Length > 0)
@@ -225,7 +230,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API update failed: {StatusCode} for workout ID: {Id}", response.StatusCode, workout.workout_id);
                     ModelState.AddModelError(string.Empty, "Update failed.");
@@ -251,7 +256,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation("📡 Deleting workout ID: {Id}", id);
 
@@ -260,7 +265,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API delete failed: {StatusCode} for workout ID: {Id}", response.StatusCode, id);
                     TempData["Error"] = "Unable to delete workout. It might be in use.";
@@ -284,7 +289,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation("📡 Fetching tutorials from API...");
 
@@ -293,7 +298,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogError("❌ API error: {StatusCode}", response.StatusCode);
                     ModelState.AddModelError(string.Empty, "Unable to fetch tutorials.");

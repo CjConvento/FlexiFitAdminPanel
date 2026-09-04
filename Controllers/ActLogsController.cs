@@ -43,9 +43,11 @@ namespace FlexiFit_AdminPanel.Controllers
             return client;
         }
 
-        private IActionResult HandleUnauthorized()
+        private IActionResult HandleExpiredToken()
         {
-            _logger.LogWarning("⛔ Unauthorized access detected. Redirecting to Login.");
+            _logger.LogWarning("⛔ Token expired. Redirecting to Login.");
+            TempData["Error"] = "Your session has expired. Please login again.";
+            HttpContext.Session.Remove("JwtToken");
             return RedirectToAction("Login", "Account");
         }
 
@@ -59,7 +61,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation("📡 Fetching all activity logs from API...");
 
@@ -83,7 +85,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogError("❌ API error: {StatusCode}", response.StatusCode);
                     ModelState.AddModelError(string.Empty, "Unable to fetch activity logs.");
@@ -118,7 +120,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation("📡 Fetching activity log ID {Id} for details", id);
 
@@ -127,7 +129,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API returned {StatusCode} when fetching log {Id}", response.StatusCode, id);
                     TempData["Error"] = $"Activity log not found (ID: {id})";
@@ -155,7 +157,7 @@ namespace FlexiFit_AdminPanel.Controllers
             try
             {
                 var client = await CreateAuthorizedClientAsync();
-                if (client == null) return HandleUnauthorized();
+                if (client == null) return HandleExpiredToken();
 
                 _logger.LogInformation("📡 Deleting activity log ID: {Id}", id);
 
@@ -164,7 +166,7 @@ namespace FlexiFit_AdminPanel.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        return HandleUnauthorized();
+                        return HandleExpiredToken();
 
                     _logger.LogWarning("❌ API delete failed: {StatusCode} for log ID: {Id}", response.StatusCode, id);
                     TempData["Error"] = "Unable to delete activity log.";
